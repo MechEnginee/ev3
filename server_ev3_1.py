@@ -51,16 +51,20 @@ while True:
     data = client_socket.recv(size)
     eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_data_ev3_1(data)
 
-
-    # TODO: Redis 연동
-
+    # TODO: Redis
 
 
 
 
 
-    # Data Processing
-    # TODO: 센서 및 모터 값 기반 행동 작성 @박태진사원
+
+    # TODO: Motor Control
+
+
+
+
+
+    # TODO: Write Log to DB
 
 
 
@@ -71,4 +75,3 @@ while True:
     # Test Code
     data = write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
     client_socket.send(data)
-    
