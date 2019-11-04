@@ -12,7 +12,7 @@ def load_config(ini_path='server_ev3.ini'):
 
     config = configparser.ConfigParser()
     config.read(ini_path)
-    return config[ev3_name]['ip'].replace('"', ''), int(config[ev3_name]['port']), int(config['config']['size'])
+    return config[ev3_name]['ip'].replace('"', ''), int(config[ev3_name]['port']), int(config[ev3_name]['size'])
 
 def int_to_bytes(v):
     return v.to_bytes(4, 'big')

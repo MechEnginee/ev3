@@ -3,26 +3,73 @@ import time
 import random
 import configparser
 import json
+import struct
+import datetime
 
 # import ev3dev.ev3 as ev3
 # from ev3dev2.sensor.lego import TouchSensor
 # from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 
 # Utility Functions
+# -----------------------------------------------------------------------
+def int_to_bytes(v):
+    return v.to_bytes(4, 'big')
+
+def float_to_bytes(v):
+    return struct.pack('!f', v)
+
+def bool_to_bytes(b):
+    return b.to_bytes(1, 'big')
+
+def bytes_to_int(b):
+    return int.from_bytes(b, 'big')
+
+def bytes_to_float(b):
+    return struct.unpack('!f', b)[0]
+
+def bytes_to_bool(b):
+    return bool.from_bytes(b, 'big')
+
+
 def generate_random_float():
     return random.random()
 
 def generate_random_boolean():
     return random.random() > 0.5
 
-
-def load_ip_port(ini_path):
+def load_config(ini_path):
     config = configparser.ConfigParser()
     config.read(ini_path)
     return config['config']['ip'].replace('"', ''), int(config['config']['port']), int(config['config']['size'])
 
-def make_send_data(**kwargs):
-    return json.dumps(kwargs)
+
+def parse_data_ev3_1(data):
+    eConv1EntrySensor = bytes_to_bool(data[0:1])
+    eConv2EntrySensor = bytes_to_bool(data[1:2])
+    eConv2StopperSensor = bytes_to_bool(data[2:3])
+    eConv2TMInputSensor = bytes_to_bool(data[3:4])
+
+    eConv1Speed = bytes_to_float(data[4:8])
+    eConv2Speed = bytes_to_float(data[8:12])
+    eConv2StopperSpeed = bytes_to_float(data[12:16])
+
+    return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+
+
+def write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed):
+    data = bytes()
+
+    data += bool_to_bytes(eConv1EntrySensor)
+    data += bool_to_bytes(eConv2EntrySensor)
+    data += bool_to_bytes(eConv2StopperSensor)
+    data += bool_to_bytes(eConv2TMInputSensor)
+
+    data += float_to_bytes(eConv1Speed)
+    data += float_to_bytes(eConv2Speed)
+    data += float_to_bytes(eConv2StopperSpeed)
+
+    return data
+# -----------------------------------------------------------------------
 
 # ev3 Setting
 # Motor
@@ -38,11 +85,10 @@ def make_send_data(**kwargs):
 
 
 # Socket Setting
-ip, port, size = load_ip_port('ev3_1.ini')
+ip, port, size = load_config('ev3_1.ini')
 address = (ip, port)
 
 # Connecting
-# TODO: Socket 연결 실패하면 어떻게 해야 하는지? -> 일정 횟수 시도 후 실패 메세지
 ev3_1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_1_socket.connect(address)
 
@@ -50,7 +96,7 @@ ev3_1_socket.connect(address)
 
 while True:
     # Get Sensor Values
-    # TODO: 센서 값 받아오는 코드 작성
+    # TODO: Sensors @TJ
     # eConv1EntrySensor = sensor_conv1_entry.is_pressed
     # eConv2EntrySensor = sensor_conv2_entry.is_pressed
     # eConv2StopperSensor = sensor_conv2_stopper.is_pressed
@@ -60,16 +106,9 @@ while True:
     eConv2EntrySensor = generate_random_boolean()
     eConv2StopperSensor = generate_random_boolean()
     eConv2TMInputSensor = generate_random_boolean()
-    
-    sensors = dict()
-    sensors['eConv1EntrySensor'] = eConv1EntrySensor
-    sensors['eConv2EntrySensor'] = eConv2EntrySensor
-    sensors['eConv2StopperSensor'] = eConv2StopperSensor
-    sensors['eConv2TMInputSensor'] = eConv2TMInputSensor
-
 
     # Get Motor Speed
-    # TODO: Motor Speed 받아오는 코드 작성
+    # TODO: Get Motor Speed @TJ
     # eConv1Speed = ????
     # eConv2Speed = ????
     # eConv2StopperSpeed = ????
@@ -77,23 +116,21 @@ while True:
     eConv1Speed = generate_random_float()
     eConv2Speed = generate_random_float()
     eConv2StopperSpeed = generate_random_float()
-    
-    speeds = dict()
-    speeds['eConv1Speed'] = eConv1Speed
-    speeds['eConv2Speed'] = eConv2Speed
-    speeds['eConv2StopperSpeed'] = eConv2StopperSpeed
 
     # Make Send Data
-    send_data = make_send_data(sensors=sensors, speeds=speeds)
+    data = write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
 
     # Send Data
-    ev3_1_socket.send(send_data.encode())
+    ev3_1_socket.send(data)
 
     # Recieve Data
-    msg = ev3_1_socket.recv(size).decode()
-    print("[{}] message : {}".format(ev3_1_socket,msg))
+    data = ev3_1_socket.recv(size)
+    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_data_ev3_1(data)
+    print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, eConv2TMInputSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
+        datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    ))
 
-    # TODO: 행동 실행 @박태진사원
+    # TODO: Move Motor @TJ
 
     # sleep
     time.sleep(0.1)

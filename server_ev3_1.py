@@ -3,6 +3,8 @@ import configparser
 import json
 import os
 import server_ev3_util as util
+import time
+import datetime
 
 
 def parse_data_ev3_1(data):
@@ -50,6 +52,10 @@ while True:
     # Get Massage from EV3
     data = client_socket.recv(size)
     eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_data_ev3_1(data)
+    print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, eConv2TMInputSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
+        datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    ))
+
 
     # TODO: Redis
 
