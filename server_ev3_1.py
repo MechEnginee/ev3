@@ -1,31 +1,56 @@
 import socket
 import configparser
 import json
+import os
+import server_ev3_util as util
 
 
-def load_ip_port(ini_path):
-    config = configparser.ConfigParser()
-    config.read(ini_path)
-    return config['config']['ip'].replace('"', ''), int(config['config']['port']), int(config['config']['size'])
+def parse_data_ev3_1(data):
+    eConv1EntrySensor = util.bytes_to_bool(data[0:1])
+    eConv2EntrySensor = util.bytes_to_bool(data[1:2])
+    eConv2StopperSensor = util.bytes_to_bool(data[2:3])
+    eConv2TMInputSensor = util.bytes_to_bool(data[3:4])
+
+    eConv1Speed = util.bytes_to_float(data[4:8])
+    eConv2Speed = util.bytes_to_float(data[8:12])
+    eConv2StopperSpeed = util.bytes_to_float(data[12:16])
+
+    return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
 
 
+def write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed):
+    data = bytes()
 
-# Socket Setting
-ip, port, size = load_ip_port('ev3_1.ini')
+    data += util.bool_to_bytes(eConv1EntrySensor)
+    data += util.bool_to_bytes(eConv2EntrySensor)
+    data += util.bool_to_bytes(eConv2StopperSensor)
+    data += util.bool_to_bytes(eConv2TMInputSensor)
+
+    data += util.float_to_bytes(eConv1Speed)
+    data += util.float_to_bytes(eConv2Speed)
+    data += util.float_to_bytes(eConv2StopperSpeed)
+
+    return data
+
+
+# Config
+ip, port, size = util.load_config('server_ev3.ini')
 address = (ip, port)
 print('Server IP : {} / Port : {}'.format(ip, port))
 
+
+# Socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(address)
 
-# Waiting
 server_socket.listen()
 client_socket, client_addr = server_socket.accept()
 
-for inx in range(10):
-    # Get Massage from EV#
-    msg = client_socket.recv(size).decode()
-    print("[{}] message : {}".format(client_addr,msg))
+while True:
+    # Get Massage from EV3
+    data = client_socket.recv(size)
+    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_data_ev3_1(data)
+
 
     # TODO: Redis 연동
 
@@ -34,20 +59,16 @@ for inx in range(10):
 
 
 
-
     # Data Processing
     # TODO: 센서 및 모터 값 기반 행동 작성 @박태진사원
-    data = json.loads(msg)
-    sensors = data['sensors']
-    sensors['eConv1EntrySensor'] = not sensors['eConv1EntrySensor']
-    sensors['eConv2EntrySensor'] = not sensors['eConv2EntrySensor']
-    sensors['eConv2StopperSensor'] = not sensors['eConv2StopperSensor']
-    sensors['eConv2TMInputSensor'] = not sensors['eConv2TMInputSensor']
 
-    speeds = data['speeds']
-    speeds['eConv1Speed'] = -1 * speeds['eConv1Speed']
-    speeds['eConv2Speed'] = -1 * speeds['eConv2Speed']
-    speeds['eConv2StopperSpeed'] = -1 * speeds['eConv2StopperSpeed']
-    
-    client_socket.send(json.dumps(data).encode())
+
+
+
+
+
+
+    # Test Code
+    data = write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
+    client_socket.send(data)
     
