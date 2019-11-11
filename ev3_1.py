@@ -6,6 +6,7 @@ import json
 import struct
 import datetime
 
+# TODO: ev3 setting
 # import ev3dev.ev3 as ev3
 # from ev3dev2.sensor.lego import TouchSensor
 # from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
@@ -71,6 +72,7 @@ def write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, 
     return data
 # -----------------------------------------------------------------------
 
+# TODO: ev3 setting
 # ev3 Setting
 # Motor
 # motor_conv1 = ev3.LargeMotor(ev3.OUTPUT_A)
