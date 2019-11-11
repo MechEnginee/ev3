@@ -43,7 +43,12 @@ def connect_redis(ini_path='server_ev3.ini'):
 def get_conveyor_move_speed(ini_path='move.ini'):
     config = configparser.ConfigParser()
     config.read(ini_path)
-    return config['conveyor']['move_speed']
+    return int(config['conveyor']['move_speed'])
+
+def get_stopper_move_info(ini_path='move.ini'):
+    config = configparser.ConfigParser()
+    config.read(ini_path)
+    return int(config['stopper']['dist']), int(config['stopper']['speed'])
 
 if __name__ == '__main__':
     print(int_to_bytes(123))
