@@ -2,6 +2,7 @@ import os
 import sys
 import configparser
 import struct
+import redis
 
 def get_file_name():
     return os.path.splitext(os.path.basename(sys.argv[0]))[0]
@@ -32,6 +33,17 @@ def bytes_to_float(b):
 def bytes_to_bool(b):
     return bool.from_bytes(b, 'big')
 
+def connect_redis(ini_path='server_ev3.ini'):
+    config = configparser.ConfigParser()
+    config.read(ini_path)
+
+    host, port = config['redis']['host'], config['redis']['port']
+    return redis.Redis(host=host, port=port)
+
+def get_conveyor_move_speed(ini_path='move.ini'):
+    config = configparser.ConfigParser()
+    config.read(ini_path)
+    return config['conveyor']['move_speed']
 
 if __name__ == '__main__':
     print(int_to_bytes(123))

@@ -48,22 +48,22 @@ def parse_data_ev3_1(data):
     eConv1EntrySensor = bytes_to_bool(data[0:1])
     eConv2EntrySensor = bytes_to_bool(data[1:2])
     eConv2StopperSensor = bytes_to_bool(data[2:3])
-    eConv2TMInputSensor = bytes_to_bool(data[3:4])
+    totalConvStopSensor = bytes_to_bool(data[3:4])
 
     eConv1Speed = bytes_to_float(data[4:8])
     eConv2Speed = bytes_to_float(data[8:12])
     eConv2StopperSpeed = bytes_to_float(data[12:16])
 
-    return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
 
 
-def write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed):
+def write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed):
     data = bytes()
 
-    data += bool_to_bytes(eConv1EntrySensor)
-    data += bool_to_bytes(eConv2EntrySensor)
-    data += bool_to_bytes(eConv2StopperSensor)
-    data += bool_to_bytes(eConv2TMInputSensor)
+    data += int_to_bytes(eConv1EntrySensor)
+    data += float_to_bytes(eConv2EntrySensor)
+    data += int_to_bytes(eConv2StopperSensor)
+    data += bool_to_bytes(totalConvStopSensor)
 
     data += float_to_bytes(eConv1Speed)
     data += float_to_bytes(eConv2Speed)
@@ -94,20 +94,21 @@ address = (ip, port)
 ev3_1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_1_socket.connect(address)
 
-
+# Stopper Flag
+flag_stopper = False
 
 while True:
     # Get Sensor Values
     # TODO: Sensors @TJ
-    # eConv1EntrySensor = sensor_conv1_entry.is_pressed
-    # eConv2EntrySensor = sensor_conv2_entry.is_pressed
-    # eConv2StopperSensor = sensor_conv2_stopper.is_pressed
-    # eConv2TMInputSensor = sensor_conv2_tm.is_pressed
+    # eConv1EntrySensor = ???
+    # eConv2EntrySensor = ???
+    # eConv2StopperSensor = ???
+    # totalConvStopSensor = ???
 
     eConv1EntrySensor = generate_random_boolean()
     eConv2EntrySensor = generate_random_boolean()
     eConv2StopperSensor = generate_random_boolean()
-    eConv2TMInputSensor = generate_random_boolean()
+    totalConvStopSensor = generate_random_boolean()
 
     # Get Motor Speed
     # TODO: Get Motor Speed @TJ
@@ -120,19 +121,25 @@ while True:
     eConv2StopperSpeed = generate_random_float()
 
     # Make Send Data
-    data = write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
+    data = write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
 
     # Send Data
     ev3_1_socket.send(data)
 
     # Recieve Data
     data = ev3_1_socket.recv(size)
-    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_data_ev3_1(data)
-    print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, eConv2TMInputSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
-        datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, eConv2TMInputSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_data_ev3_1(data)
+    print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
+        datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
     ))
 
     # TODO: Move Motor @TJ
+    # motor_conv1.move_forever(eConv1Speed)
+    # motor_conv2.move_forever(eConv2Speed)
+    
+    # curr_flag_stopper = True if eConv2StopperSensor >
+
+
 
     # sleep
     time.sleep(0.1)

@@ -5,6 +5,7 @@ import os
 import server_ev3_util as util
 import time
 import datetime
+import redis
 
 
 def parse_data_ev3_1(data):
@@ -35,6 +36,7 @@ def write_data_ev3_1(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, 
     return data
 
 
+
 # Config
 ip, port, size = util.load_config('server_ev3.ini')
 address = (ip, port)
@@ -48,6 +50,9 @@ server_socket.bind(address)
 server_socket.listen()
 client_socket, client_addr = server_socket.accept()
 
+# Redis
+r = util.connect_redis('server_ev3.ini')
+
 while True:
     # Get Massage from EV3
     data = client_socket.recv(size)
@@ -58,16 +63,30 @@ while True:
 
 
     # TODO: Redis
+    pipe = r.pipeline()
+    
+    # Sensors
+    pipe.set('eConv1EntrySensor', eConv1EntrySensor)
+    pipe.set('eConv2EntrySensor', eConv2EntrySensor)
+    pipe.set('eConv2StopperSensor', eConv2StopperSensor)
+    pipe.set('eConv2TMInputSensor', eConv2TMInputSensor)
+    # Moter Speed
+    pipe.set('eConv1Speed', eConv1Speed)
+    pipe.set('eConv2Speed', eConv2Speed)
+    pipe.set('eConv2StopperSpeed', eConv2StopperSpeed)
 
-
-
-
-
+    pipe.execute()
 
     # TODO: Motor Control
 
+    # Conveyor
+    conveyor_move_speed = util.get_conveyor_move_speed('move.ini')
+    if abs(eConv1Speed - conveyor_move_speed) > 25:
+        eConv1Speed = conveyor_move_speed
+    if abs(eConv2Speed - conveyor_move_speed) > 25:
+        eConv2Speed = conveyor_move_speed
 
-
+    
 
 
     # TODO: Write Log to DB
