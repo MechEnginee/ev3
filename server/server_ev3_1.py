@@ -5,7 +5,7 @@ import os
 import server_ev3_util as util
 import time
 import datetime
-import redis
+# import redis
 
 
 def parse_ev3_1_client_data(data):

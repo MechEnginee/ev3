@@ -16,7 +16,7 @@ def load_config(ini_path='server_ev3.ini'):
     return config[ev3_name]['ip'].replace('"', ''), int(config[ev3_name]['port']), int(config[ev3_name]['size'])
 
 def int_to_bytes(v):
-    return v.to_bytes(4, 'big')
+    return v.to_bytes(4, 'big', signed=True)
 
 def float_to_bytes(v):
     return struct.pack('!f', v)
@@ -25,7 +25,7 @@ def bool_to_bytes(b):
     return b.to_bytes(1, 'big')
 
 def bytes_to_int(b):
-    return int.from_bytes(b, 'big')
+    return int.from_bytes(b, 'big', signed=True)
 
 def bytes_to_float(b):
     return struct.unpack('!f', b)[0]

@@ -12,7 +12,7 @@ import ev3dev.ev3 as ev3
 # Utility Functions
 # -----------------------------------------------------------------------
 def int_to_bytes(v):
-    return v.to_bytes(4, 'big')
+    return v.to_bytes(4, 'big', signed=True)
 
 def float_to_bytes(v):
     return struct.pack('!f', v)
@@ -21,7 +21,7 @@ def bool_to_bytes(b):
     return b.to_bytes(1, 'big')
 
 def bytes_to_int(b):
-    return int.from_bytes(b, 'big')
+    return int.from_bytes(b, 'big', signed=True)
 
 def bytes_to_float(b):
     return struct.unpack('!f', b)[0]
@@ -114,7 +114,7 @@ while True:
         conv1_motor.run_forever(speed_sp=eConv1Speed)
         conv2_motor.run_forever(speed_sp=eConv2Speed)
 
-        if (eConv2StopperDist == -1) and (eConv2StopperSpeed == -1):
+        if (eConv2StopperDist == 0) and (eConv2StopperSpeed == 0):
             pass
         else:
             stopper_motor.run_to_rel_pos(speed_sp=eConv2StopperSpeed, position_sp=eConv2StopperDist)
