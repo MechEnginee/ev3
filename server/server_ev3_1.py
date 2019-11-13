@@ -5,7 +5,7 @@ import os
 import server_ev3_util as util
 import time
 import datetime
-# import redis
+import redis
 
 
 def parse_ev3_1_client_data(data):
@@ -50,7 +50,7 @@ server_socket.listen()
 client_socket, client_addr = server_socket.accept()
 
 # Redis
-# r = util.connect_redis('server_ev3.ini')
+r = util.connect_redis('server_ev3.ini')
 
 # Stopper Flag
 stopper_flag = False
@@ -63,20 +63,20 @@ while True:
         datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
     ))
 
-    # # TODO: Redis
-    # pipe = r.pipeline()
+    # TODO: Redis
+    pipe = r.pipeline()
     
-    # # Sensors
-    # pipe.set('eConv1EntrySensor', eConv1EntrySensor)
-    # pipe.set('eConv2EntrySensor', eConv2EntrySensor)
-    # pipe.set('eConv2StopperSensor', eConv2StopperSensor)
-    # pipe.set('totalConvStopSensor', totalConvStopSensor)
-    # # Moter Speed
-    # pipe.set('eConv1Speed', eConv1Speed)
-    # pipe.set('eConv2Speed', eConv2Speed)
-    # pipe.set('eConv2StopperSpeed', eConv2StopperSpeed)
+    # Sensors
+    pipe.set('eConv1EntrySensor', eConv1EntrySensor)
+    pipe.set('eConv2EntrySensor', eConv2EntrySensor)
+    pipe.set('eConv2StopperSensor', eConv2StopperSensor)
+    pipe.set('totalConvStopSensor', totalConvStopSensor)
+    # Moter Speed
+    pipe.set('eConv1Speed', eConv1Speed)
+    pipe.set('eConv2Speed', eConv2Speed)
+    pipe.set('eConv2StopperSpeed', eConv2StopperSpeed)
 
-    # pipe.execute()
+    pipe.execute()
 
     # Motor Control
     # Conveyor
