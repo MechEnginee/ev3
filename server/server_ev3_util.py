@@ -50,5 +50,12 @@ def get_stopper_move_info(ini_path='move.ini'):
     config.read(ini_path)
     return int(config['stopper']['dist']), int(config['stopper']['speed'])
 
+def get_robot_con1_to_testMachine1_info(ini_path='move.ini'):
+    config = configparser.ConfigParser()
+    config.read(ini_path)
+    return int(config['robot_c1_to_t1']['motor1_dist']), int(config['robot_c1_to_t1']['motor1_speed']), int(config['robot_c1_to_t1']['motor2_dist']), int(config['robot_c1_to_t1']['motor2_speed']), int(config['robot_c1_to_t1']['motor3_dist']), int(config['robot_c1_to_t1']['motor3_speed'])
+    
+
+
 if __name__ == '__main__':
     print(int_to_bytes(123))

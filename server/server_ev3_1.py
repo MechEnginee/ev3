@@ -85,7 +85,7 @@ while True:
     eConv2Speed = conveyor_move_speed
     
     # Stopper
-    if eConv2StopperSensor > 3:
+    if eConv2StopperSensor > 2:
         curr_stopper_flag = True
     else:
         curr_stopper_flag = False
