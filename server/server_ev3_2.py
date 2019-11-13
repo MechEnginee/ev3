@@ -8,7 +8,7 @@ import datetime
 # import redis
 
 
-def parse_ev3_1_client_data(data):
+def parse_ev3_2_client_data(data):
     eConv1EntrySensor = util.bytes_to_int(data[0:4])
     eConv2EntrySensor = util.bytes_to_int(data[4:8])
     eConv2StopperSensor = util.bytes_to_int(data[8:12])
@@ -21,7 +21,7 @@ def parse_ev3_1_client_data(data):
     return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
 
 
-def write_ev3_1_server_data(eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed):
+def write_ev3_2_server_data(eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed):
     data = bytes()
 
     data += util.int_to_bytes(eConv1Speed)
@@ -100,7 +100,7 @@ while True:
     stopper_flag = curr_stopper_flag
 
     # Test Code
-    data = write_ev3_1_server_data(eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed)
+    data = write_ev3_2_server_data(eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed)
     client_socket.send(data)
 
     # TODO: Write Log to DB
