@@ -9,29 +9,29 @@ import datetime
 
 
 def parse_ev3_2_client_data(data):
-    eConv1EntrySensor = util.bytes_to_int(data[0:4])
-    eConv2EntrySensor = util.bytes_to_int(data[4:8])
-    eConv2StopperSensor = util.bytes_to_int(data[8:12])
-    totalConvStopSensor = util.bytes_to_int(data[12:16])
+    tM1Sensor = util.bytes_to_int(data[0:4])
+    tM2Sensor = util.bytes_to_int(data[4:8])
+    tM3Sensor = util.bytes_to_int(data[8:12])
+    tM4Sensor = util.bytes_to_int(data[12:16])
 
-    eConv1Speed = util.bytes_to_int(data[16:20])
-    eConv2Speed = util.bytes_to_int(data[20:24])
-    eConv2StopperSpeed = util.bytes_to_int(data[24:28])
+    robotJoint1Speed = util.bytes_to_int(data[16:20])
+    robotJoint2Speed = util.bytes_to_int(data[20:24])
+    robotHandSpeed = util.bytes_to_int(data[24:28])
 
-    return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    return tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed
 
 
-def write_ev3_2_server_data(eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed):
+def write_ev3_2_server_data(tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed):
     data = bytes()
 
-    data += util.int_to_bytes(eConv1Speed)
-    data += util.int_to_bytes(eConv2Speed)
-    data += util.int_to_bytes(eConv2StopperDist)
-    data += util.int_to_bytes(eConv2StopperSpeed)
+    data += util.int_to_bytes(tM1Sensor)
+    data += util.int_to_bytes(tM2Sensor)
+    data += util.int_to_bytes(tM3Sensor)
+    data += util.int_to_bytes(tM4Sensor)
 
-    data += util.int_to_bytes(0)
-    data += util.int_to_bytes(0)
-    data += util.int_to_bytes(0)
+    data += util.int_to_bytes(robotJoint1Speed)
+    data += util.int_to_bytes(robotJoint2Speed)
+    data += util.int_to_bytes(robotHandSpeed)
 
     return data
 
@@ -53,15 +53,15 @@ client_socket, client_addr = server_socket.accept()
 # r = util.connect_redis('server_ev3.ini')
 
 # Stopper Flag
-stopper_flag = False
+# stopper_flag = False
 
 while True:
     # Get Massage from EV3
     data = client_socket.recv(size)
-    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_ev3_1_client_data(data)
-    print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
-        datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
-    ))
+    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_ev3_2_client_data(data)
+    # print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
+    #     datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    # ))
 
     # # TODO: Redis
     # pipe = r.pipeline()
@@ -78,9 +78,10 @@ while True:
 
     # pipe.execute()
 
+    #TODO:
     # Motor Control
     # Conveyor
-    conveyor_move_speed = util.get_conveyor_move_speed('move.ini')
+    conveyor_move_speed = util.get_robot_con1_to_testMachine1_info('move.ini')
     eConv1Speed = conveyor_move_speed
     eConv2Speed = conveyor_move_speed
     

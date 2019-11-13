@@ -106,10 +106,10 @@ while True:
     # ))
 
     # Move Motor
-    print(stopper_motor.position_sp, type(stopper_motor.position_sp), file=sys.stderr)
+    # print(stopper_motor.position_sp, type(stopper_motor.position_sp), file=sys.stderr)
     if totalConvStopSensor == 1:
-        # conv1_motor.run_forever(speed_sp=0)
-        # conv2_motor.run_forever(speed_sp=0)
+        conv1_motor.run_forever(speed_sp=0)
+        conv2_motor.run_forever(speed_sp=0)
         if stopper_motor.position_sp<0: # emergency initiate
             a = abs(stopper_motor.position_sp)
             stopper_motor.run_to_rel_pos(speed_sp=300, position_sp=a) 
@@ -122,8 +122,8 @@ while True:
         break
 
     else:
-        # conv1_motor.run_forever(speed_sp=eConv1Speed)
-        # conv2_motor.run_forever(speed_sp=-1*eConv2Speed)
+        conv1_motor.run_forever(speed_sp=eConv1Speed)
+        conv2_motor.run_forever(speed_sp=-1*eConv2Speed)
 
         if (eConv2StopperDist == 0) and (eConv2StopperSpeed == 0):
             pass
