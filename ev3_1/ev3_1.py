@@ -33,7 +33,7 @@ def bytes_to_bool(b):
 def load_config(ini_path):
     config = configparser.ConfigParser()
     config.read(ini_path)
-    return config['config']['ip'].replace('"', ''), int(config['config']['port']), int(config['config']['size'])
+    return config['config']['ip'], int(config['config']['port']), int(config['config']['size'])
 
 
 def parse_ev3_1_server_data(data):
