@@ -11,14 +11,14 @@ import redis
 def parse_ev3_1_client_data(data):
     eConv1EntrySensor = util.bytes_to_int(data[0:4])
     eConv2EntrySensor = util.bytes_to_int(data[4:8])
-    eConv2StopperSensor = util.bytes_to_int(data[8:12])
-    totalConvStopSensor = util.bytes_to_int(data[12:16])
+    #eConv2StopperSensor = util.bytes_to_int(data[8:12])
+    #totalConvStopSensor = util.bytes_to_int(data[12:16])
 
-    eConv1Speed = util.bytes_to_int(data[16:20])
-    eConv2Speed = util.bytes_to_int(data[20:24])
-    eConv2StopperSpeed = util.bytes_to_int(data[24:28])
+    eConv1Speed = util.bytes_to_int(data[8:12])
+    eConv2Speed = util.bytes_to_int(data[12:16])
+    eConv2StopperSpeed = util.bytes_to_int(data[16:20])
 
-    return eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
+    return eConv1EntrySensor, eConv2EntrySensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed #eConv2StopperSensor, totalConvStopSensor#
 
 
 def write_ev3_1_server_data(eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed):
@@ -41,7 +41,6 @@ ip, port, size = util.load_config('server_ev3.ini')
 address = (ip, port)
 print('Server IP : {} / Port : {}'.format(ip, port))
 
-
 # Socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(address)
@@ -52,13 +51,16 @@ client_socket, client_addr = server_socket.accept()
 # Redis
 r = util.connect_redis('server_ev3.ini')
 
+# Emergency Flag
+Emergency_Flag = False
+
 # Stopper Flag
 stopper_flag = False
 
 while True:
     # Get Massage from EV3
     data = client_socket.recv(size)
-    eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_ev3_1_client_data(data)
+    eConv1EntrySensor, eConv2EntrySensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed = parse_ev3_1_client_data(data)
     print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
         datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
     ))
@@ -69,12 +71,14 @@ while True:
     # Sensors
     pipe.set('eConv1EntrySensor', eConv1EntrySensor)
     pipe.set('eConv2EntrySensor', eConv2EntrySensor)
-    pipe.set('eConv2StopperSensor', eConv2StopperSensor)
-    pipe.set('totalConvStopSensor', totalConvStopSensor)
+
     # Moter Speed
     pipe.set('eConv1Speed', eConv1Speed)
     pipe.set('eConv2Speed', eConv2Speed)
     pipe.set('eConv2StopperSpeed', eConv2StopperSpeed)
+    #ev3_2_stopper_sensor_Info
+    eConv2StopperSensor = pipe.get('eConv2StopperSensor')#?
+    totalConvStopSensor = pipe.get('totalConvStopSensor')#?
 
     pipe.execute()
 
@@ -84,6 +88,9 @@ while True:
     eConv1Speed = conveyor_move_speed
     eConv2Speed = conveyor_move_speed
     
+    #Emergency Button
+    
+
     # Stopper
     if eConv2StopperSensor > 2:
         curr_stopper_flag = True
