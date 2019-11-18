@@ -70,8 +70,8 @@ Robot_Hand_Motor = ev3.Motor('outC')
 
 # Sensor
 Stopper_Sensor = ev3.ColorSensor('in1')
-Test_Machine2 = ev3.ColorSensor('in2')
-Test_Machine3 = ev3.ColorSensor('in3')
+Test_Machine1 = ev3.ColorSensor('in2')
+Test_Machine2 = ev3.ColorSensor('in3')
 
 # Socket Setting
 ip, port, size = load_config('ev3_2.ini')
@@ -83,25 +83,24 @@ ev3_2_socket.connect(address)
 
 while True:
     # Get Sensor Values
+    eConvStopperSensor = Stopper_Sensor.reflected_light_intensity
     tM1Sensor = Test_Machine1.reflected_light_intensity
     tM2Sensor = Test_Machine2.reflected_light_intensity
-    tM3Sensor = Test_Machine3.reflected_light_intensity
-    tM4Sensor = Test_Machine4.reflected_light_intensity
-
+    
     # Get Motor Speed
     robotJoint1Speed = Robot_Base_Motor.speed
     robotJoint2Speed = Robot_Elbow_Motor.speed
     robotHandSpeed = Robot_Hand_Motor.speed
 
     # Make Send Data
-    data = write_ev3_2_client_data(tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed)
+    data = write_ev3_2_client_data(tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed)
 
     # Send Data
     ev3_2_socket.send(data)
 
     # Recieve Data
     data = ev3_2_socket.recv(size)
-    tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed = parse_ev3_2_server_data(data)
+    tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed = parse_ev3_2_server_data(data)
     # print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
     #     datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
     # ))
