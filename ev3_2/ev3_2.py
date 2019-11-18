@@ -39,23 +39,21 @@ def load_config(ini_path):
 def parse_ev3_2_server_data(data):
     tM1Sensor = bytes_to_int(data[0:4])
     tM2Sensor = bytes_to_int(data[4:8])
-    tM3Sensor = bytes_to_int(data[8:12])
-    tM4Sensor = bytes_to_int(data[12:16])
+    eConvStopperSensor = bytes_to_int(data[8:12])
 
-    robotJoint1Speed = bytes_to_int(data[16:20])
-    robotJoint2Speed = bytes_to_int(data[20:24])
-    robotHandSpeed = bytes_to_int(data[24:28])
+    robotJoint1Speed = bytes_to_int(data[12:16])
+    robotJoint2Speed = bytes_to_int(data[16:20])
+    robotHandSpeed = bytes_to_int(data[20:24])
 
-    return tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed
+    return tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed
 
 
-def write_ev3_2_client_data(tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed):
+def write_ev3_2_client_data(tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed):
     data = bytes()
 
     data += int_to_bytes(tM1Sensor)
     data += int_to_bytes(tM2Sensor)
-    data += int_to_bytes(tM3Sensor)
-    data += int_to_bytes(tM4Sensor)
+    data += int_to_bytes(eConvStopperSensor)
 
     data += int_to_bytes(robotJoint1Speed)
     data += int_to_bytes(robotJoint2Speed)
@@ -71,10 +69,9 @@ Robot_Elbow_Motor = ev3.Motor('outB')
 Robot_Hand_Motor = ev3.Motor('outC')
 
 # Sensor
-Test_Machine1 = ev3.ColorSensor('in1')
-Test_Machine2 = ev3.ColorSensor('in2')
-Test_Machine3 = ev3.ColorSensor('in3')
-Test_Machine4 = ev3.ColorSensor('in4')
+Stopper_Sensor = ev3.ColorSensor('in1')
+Test_Machine1 = ev3.ColorSensor('in2')
+Test_Machine2 = ev3.ColorSensor('in3')
 
 # Socket Setting
 ip, port, size = load_config('ev3_2.ini')
@@ -86,25 +83,24 @@ ev3_2_socket.connect(address)
 
 while True:
     # Get Sensor Values
+    eConvStopperSensor = Stopper_Sensor.reflected_light_intensity
     tM1Sensor = Test_Machine1.reflected_light_intensity
     tM2Sensor = Test_Machine2.reflected_light_intensity
-    tM3Sensor = Test_Machine3.reflected_light_intensity
-    tM4Sensor = Test_Machine4.reflected_light_intensity
-
+    
     # Get Motor Speed
     robotJoint1Speed = Robot_Base_Motor.speed
     robotJoint2Speed = Robot_Elbow_Motor.speed
     robotHandSpeed = Robot_Hand_Motor.speed
 
     # Make Send Data
-    data = write_ev3_2_client_data(tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed)
+    data = write_ev3_2_client_data(tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed)
 
     # Send Data
     ev3_2_socket.send(data)
 
     # Recieve Data
     data = ev3_2_socket.recv(size)
-    tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed = parse_ev3_2_server_data(data)
+    tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed = parse_ev3_2_server_data(data)
     # print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
     #     datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
     # ))

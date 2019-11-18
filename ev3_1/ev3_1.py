@@ -7,6 +7,7 @@ import json
 import struct
 import datetime
 
+
 import ev3dev.ev3 as ev3
 
 # Utility Functions
@@ -41,17 +42,17 @@ def parse_ev3_1_server_data(data):
     eConv2Speed = bytes_to_int(data[4:8])
     eConv2StopperDist = bytes_to_int(data[8:12])
     eConv2StopperSpeed = bytes_to_int(data[12:16])
+    #TODO: totalConvStopSensor Pull
 
     return eConv1Speed, eConv2Speed, eConv2StopperDist, eConv2StopperSpeed
 
-
-def write_ev3_1_client_data(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed):
+def write_ev3_1_client_data(eConv1EntrySensor, eConv2EntrySensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed):
     data = bytes()
 
     data += int_to_bytes(eConv1EntrySensor)
     data += float_to_bytes(eConv2EntrySensor)
-    data += int_to_bytes(eConv2StopperSensor)
-    data += int_to_bytes(totalConvStopSensor)
+    # data += int_to_bytes(eConv2StopperSensor)
+    # data += int_to_bytes(totalConvStopSensor)
 
     data += int_to_bytes(eConv1Speed)
     data += int_to_bytes(eConv2Speed)
@@ -69,8 +70,8 @@ stopper_motor = ev3.Motor('outC')
 # Sensor
 conv1_entry_sensor = ev3.ColorSensor('in1')
 conv2_entry_sensor = ev3.UltrasonicSensor('in2')
-stopper_sensor = ev3.ColorSensor('in3')
-emergency_sensor = ev3.TouchSensor('in4')
+# stopper_sensor = ev3.ColorSensor('in3')
+# emergency_sensor = ev3.TouchSensor('in4')
 
 # Socket Setting
 ip, port, size = load_config('ev3_1.ini')
@@ -84,8 +85,8 @@ while True:
     # Get Sensor Values
     eConv1EntrySensor = conv1_entry_sensor.reflected_light_intensity
     eConv2EntrySensor = conv2_entry_sensor.distance_centimeters
-    eConv2StopperSensor = stopper_sensor.reflected_light_intensity
-    totalConvStopSensor = emergency_sensor.value()
+    # eConv2StopperSensor = stopper_sensor.reflected_light_intensity
+    # totalConvStopSensor = emergency_sensor.value()
 
     # Get Motor Speed
     eConv1Speed = conv1_motor.speed
@@ -93,7 +94,7 @@ while True:
     eConv2StopperSpeed = stopper_motor.speed
 
     # Make Send Data
-    data = write_ev3_1_client_data(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
+    data = write_ev3_1_client_data(eConv1EntrySensor, eConv2EntrySensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed)
 
     # Send Data
     ev3_1_socket.send(data)
@@ -106,13 +107,13 @@ while True:
     # ))
 
     # Move Motor
-    # print(stopper_motor.position_sp, type(stopper_motor.position_sp), file=sys.stderr)
+    print(stopper_motor.position_sp, type(stopper_motor.position_sp), file=sys.stderr)
     if totalConvStopSensor == 1:
         conv1_motor.run_forever(speed_sp=0)
         conv2_motor.run_forever(speed_sp=0)
         if stopper_motor.position_sp<0: # emergency initiate
-            a = abs(stopper_motor.position_sp)
-            stopper_motor.run_to_rel_pos(speed_sp=300, position_sp=a) 
+            a = abs(stopper_motor.position_sp)#Back Direction
+            stopper_motor.run_to_rel_pos(speed_sp=300, position_sp=a)
             stopper_motor.wait_while('running')
             time.sleep(3)
         elif stopper_motor.position_sp>=0: # emergency initiate
