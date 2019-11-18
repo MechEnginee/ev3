@@ -39,23 +39,21 @@ def load_config(ini_path):
 def parse_ev3_2_server_data(data):
     tM1Sensor = bytes_to_int(data[0:4])
     tM2Sensor = bytes_to_int(data[4:8])
-    tM3Sensor = bytes_to_int(data[8:12])
-    tM4Sensor = bytes_to_int(data[12:16])
+    eConvStopperSensor = bytes_to_int(data[8:12])
 
-    robotJoint1Speed = bytes_to_int(data[16:20])
-    robotJoint2Speed = bytes_to_int(data[20:24])
-    robotHandSpeed = bytes_to_int(data[24:28])
+    robotJoint1Speed = bytes_to_int(data[12:16])
+    robotJoint2Speed = bytes_to_int(data[16:20])
+    robotHandSpeed = bytes_to_int(data[20:24])
 
-    return tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed
+    return tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed
 
 
-def write_ev3_2_client_data(tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed):
+def write_ev3_2_client_data(tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed):
     data = bytes()
 
     data += int_to_bytes(tM1Sensor)
     data += int_to_bytes(tM2Sensor)
-    data += int_to_bytes(tM3Sensor)
-    data += int_to_bytes(tM4Sensor)
+    data += int_to_bytes(eConvStopperSensor)
 
     data += int_to_bytes(robotJoint1Speed)
     data += int_to_bytes(robotJoint2Speed)
@@ -71,10 +69,9 @@ Robot_Elbow_Motor = ev3.Motor('outB')
 Robot_Hand_Motor = ev3.Motor('outC')
 
 # Sensor
-Test_Machine1 = ev3.ColorSensor('in1')
+Stopper_Sensor = ev3.ColorSensor('in1')
 Test_Machine2 = ev3.ColorSensor('in2')
 Test_Machine3 = ev3.ColorSensor('in3')
-Test_Machine4 = ev3.ColorSensor('in4')
 
 # Socket Setting
 ip, port, size = load_config('ev3_2.ini')
