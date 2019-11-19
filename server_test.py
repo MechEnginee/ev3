@@ -2,7 +2,7 @@ import socket
 import threading
 import json
 
-ip = '192.168.10.161'
+ip = '10.81.98.63'
 port = 8080
 address = (ip, port)
 
@@ -23,7 +23,7 @@ def server_thread(client_socket, client_addr):
             msg = client_socket.recv(1024).decode()
 
             recv_data = json.loads(msg)
-            print(recv_data)
+            # print(recv_data)
             return_data = dict()
 
             for key, value in recv_data.items():
@@ -38,7 +38,7 @@ def server_thread(client_socket, client_addr):
 
             client_socket.send(json.dumps(return_data).encode())
 
-            print(json.dumps(return_data))
+            # print(json.dumps(return_data))
     except:
         client_socket.close()
 

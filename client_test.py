@@ -9,7 +9,7 @@ print(send_data_names, recieve_data_names)
 
 
 # Socket Setting
-ip = '192.168.10.161'
+ip = '10.81.98.63'
 port = 8080
 address = (ip, port)
 
@@ -31,4 +31,4 @@ while True:
     recieve_data = json.loads(recieve_msg)
     print(recieve_data)
     
-    time.sleep(random.random())
+    time.sleep(0.1)
