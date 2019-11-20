@@ -30,11 +30,43 @@ robot_hand_motor = ev3.Motor('outC')
 # ev3 Name
 ev3_name = 'ev3_2'
 
-# TODO:
+# #robot initialize
 robot_base_zero_point = 0
 robot_elbow_zero_point = 0
 robot_hand_zero_point = 0
+robot_joint_1_motor.run_to_abs_pos(speed_sp = 100, position_sp = robot_base_zero_point, stop_action = 'hold')
+robot_joint_2_motor.run_to_abs_pos(speed_sp = 100, position_sp = robot_elbow_zero_point, stop_action = 'hold')
+robot_hand_motor.run_to_abs_pos(speed_sp = 100, position_sp = robot_hand_zero_point, stop_action = 'hold')
+robot_joint_1_motor.wait_while('running')
+robot_joint_2_motor.wait_while('running')
+robot_hand_motor.wait_while('running')
 
+#base initialize
+robot_joint_1_motor.run_to_abs_pos(speed_sp = 100, position_sp = 50, stop_action = 'hold')
+robot_joint_1_motor.wait_while('running')
+while True:
+    if stopper_sensor.reflected_light_intensity > 0.5:
+        robot_joint_1_motor.stop
+        break
+    else : 
+        robot_joint_1_motor.run_to_abs_pos(speed_sp = 100, position_sp = -100, stop_action = 'hold')
+    
+robot_base_zero_point = robot_joint_1_motor.position
+robot_joint_1_motor.run_to_abs_pos(speed_sp = 50, position_sp=robot_base_zero_point, stop_action = 'hold')
+robot_joint_1_motor.wait_while('running')
+
+#elbow initialize
+robot_joint_2_motor.run_to_abs_pos(speed_sp=100, position_sp=-300, stop_action = 'hold')
+robot_joint_2_motor.wait_until('stalled')
+robot_elbow_zero_point = robot_joint_2_motor.position + 70
+robot_joint_2_motor.run_to_abs_pos(speed_sp=50, position_sp=robot_elbow_zero_point, stop_action = 'hold')
+robot_joint_2_motor.wait_while('running')
+#hand initialize
+robot_hand_motor.run_to_abs_pos(speed_sp=100, position_sp=300, stop_action = 'hold')
+robot_hand_motor.wait_until('stalled')
+robot_hand_zero_point = robot_hand_motor.position - 40
+robot_hand_motor.run_to_abs_pos(speed_sp=50, position_sp=robot_hand_zero_point, stop_action = 'hold')
+robot_hand_motor.wait_while('running')
 # -----------------------------------------------------------------------
 
 
