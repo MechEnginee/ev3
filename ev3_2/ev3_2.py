@@ -31,9 +31,10 @@ robot_hand_motor = ev3.Motor('outC')
 ev3_name = 'ev3_2'
 
 # TODO:
-robot_joint_1_zero_point = 0
-robot_joint_2_zero_point = 0
+robot_base_zero_point = 0
+robot_elbow_zero_point = 0
 robot_hand_zero_point = 0
+
 # -----------------------------------------------------------------------
 
 
