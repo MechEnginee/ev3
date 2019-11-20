@@ -10,125 +10,87 @@ import datetime
 import ev3dev.ev3 as ev3
 
 # Utility Functions
-# -----------------------------------------------------------------------
-def int_to_bytes(v):
-    return v.to_bytes(4, 'big', signed=True)
-
-def float_to_bytes(v):
-    return struct.pack('!f', v)
-
-def bool_to_bytes(b):
-    return b.to_bytes(1, 'big')
-
-def bytes_to_int(b):
-    return int.from_bytes(b, 'big', signed=True)
-
-def bytes_to_float(b):
-    return struct.unpack('!f', b)[0]
-
-def bytes_to_bool(b):
-    return bool.from_bytes(b, 'big')
-
-
 def load_config(ini_path):
     config = configparser.ConfigParser()
     config.read(ini_path)
-    return config['config']['ip'], int(config['config']['port']), int(config['config']['size'])
-
-
-def parse_ev3_2_server_data(data):
-    tM1Sensor = bytes_to_int(data[0:4])
-    tM2Sensor = bytes_to_int(data[4:8])
-    eConvStopperSensor = bytes_to_int(data[8:12])
-
-    robotJoint1Speed = bytes_to_int(data[12:16])
-    robotJoint2Speed = bytes_to_int(data[16:20])
-    robotHandSpeed = bytes_to_int(data[20:24])
-
-    return tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed
-
-
-def write_ev3_2_client_data(tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed):
-    data = bytes()
-
-    data += int_to_bytes(tM1Sensor)
-    data += int_to_bytes(tM2Sensor)
-    data += int_to_bytes(eConvStopperSensor)
-
-    data += int_to_bytes(robotJoint1Speed)
-    data += int_to_bytes(robotJoint2Speed)
-    data += int_to_bytes(robotHandSpeed)
-
-    return data
-# -----------------------------------------------------------------------
+    return config['config']['ip'], int(config['config']['port'])
 
 # ev3 Setting
-# Motor
-Robot_Base_Motor = ev3.Motor('outA')
-Robot_Elbow_Motor = ev3.Motor('outB')
-Robot_Hand_Motor = ev3.Motor('outC')
-
+# -----------------------------------------------------------------------
 # Sensor
-Stopper_Sensor = ev3.ColorSensor('in1')
-Test_Machine1 = ev3.ColorSensor('in2')
-Test_Machine2 = ev3.ColorSensor('in3')
+stopper_sensor = ev3.ColorSensor('in1')
+tM1_sensor = ev3.ColorSensor('in2')
+tM2_sensor = ev3.ColorSensor('in3')
+
+# Motor
+robot_joint_1_motor = ev3.Motor('outA')
+robot_joint_2_motor = ev3.Motor('outB')
+robot_hand_motor = ev3.Motor('outC')
+
+# ev3 Name
+ev3_name = 'ev3_2'
+
+# TODO:
+robot_joint_1_zero_point = 0
+robot_joint_2_zero_point = 0
+robot_hand_zero_point = 0
+# -----------------------------------------------------------------------
+
 
 # Socket Setting
-ip, port, size = load_config('ev3_2.ini')
+ip, port = load_config(ev3_name + '.ini')
 address = (ip, port)
 
 # Connecting
-ev3_2_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ev3_2_socket.connect(address)
+ev3_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+ev3_socket.connect(address)
+ev3_socket.send(ev3_name.encode())
 
 while True:
+    send_data = dict()
+
+# -----------------------------------------------------------------------
     # Get Sensor Values
-    eConvStopperSensor = Stopper_Sensor.reflected_light_intensity
-    tM1Sensor = Test_Machine1.reflected_light_intensity
-    tM2Sensor = Test_Machine2.reflected_light_intensity
-    
+    send_data['eConv2StopperSensor'] = stopper_sensor.reflected_light_intensity
+    send_data['tM1Sensor'] = tM1_sensor.reflected_light_intensity
+    send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
+
     # Get Motor Speed
-    robotJoint1Speed = Robot_Base_Motor.speed
-    robotJoint2Speed = Robot_Elbow_Motor.speed
-    robotHandSpeed = Robot_Hand_Motor.speed
+    send_data['robotJoint1Speed'] = robot_joint_1_motor.speed
+    send_data['robotJoint2Speed'] = robot_joint_2_motor.speed
+    send_data['robotHandSpeed'] = robot_hand_motor.speed
+
+    # Request
+    send_data['request'] = []
+    send_data['request'].append('robotJoint1TargetSpeed')
+    send_data['request'].append('robotJoint1TargetDistance')
+    send_data['request'].append('robotJoint2TargetSpeed')
+    send_data['request'].append('robotJoint2TargetDistance')
+    send_data['request'].append('robotHandTargetSpeed')
+    send_data['request'].append('robotHandTargetDistance')
+# -----------------------------------------------------------------------
 
     # Make Send Data
-    data = write_ev3_2_client_data(tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed)
+    send_msg = json.dumps(send_data)
 
     # Send Data
-    ev3_2_socket.send(data)
+    ev3_socket.send(send_msg.encode())
 
     # Recieve Data
-    data = ev3_2_socket.recv(size)
-    tM1Sensor, tM2Sensor, eConvStopperSensor, robotJoint1Speed, robotJoint2Speed, robotHandSpeed = parse_ev3_2_server_data(data)
-    # print('{} eConv1EntrySensor-{}, eConv2EntrySensor-{}, eConv2StopperSensor-{}, totalConvStopSensor-{}, eConv1Speed-{}, eConv2Speed-{}, eConv2StopperSpeed-{}'.format(
-    #     datetime.datetime.now(), eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, totalConvStopSensor, eConv1Speed, eConv2Speed, eConv2StopperSpeed
-    # ))
+    recieve_msg = ev3_socket.recv(1024).decode()
+    recieve_data = json.loads(recieve_msg)
 
-    #TODO: Move Motor
-    # print(stopper_motor.position_sp, type(stopper_motor.position_sp), file=sys.stderr)
-    # if totalConvStopSensor == 1:
-    #     # conv1_motor.run_forever(speed_sp=0)
-    #     # conv2_motor.run_forever(speed_sp=0)
-    #     if stopper_motor.position_sp<0: # emergency initiate
-    #         a = abs(stopper_motor.position_sp)
-    #         stopper_motor.run_to_rel_pos(speed_sp=300, position_sp=a) 
-    #         stopper_motor.wait_while('running')
-    #         time.sleep(3)
-    #     elif stopper_motor.position_sp>=0: # emergency initiate
-    #         stopper_motor.wait_while('running') 
-    #         time.sleep(3)
-        
-    #     break
-
-    # else:
-    #     # conv1_motor.run_forever(speed_sp=eConv1Speed)
-    #     # conv2_motor.run_forever(speed_sp=-1*eConv2Speed)
-
-    #     if (eConv2StopperDist == 0) and (eConv2StopperSpeed == 0):
-    #         pass
-    #     else:   
-    #         stopper_motor.run_to_rel_pos(speed_sp=eConv2StopperSpeed, position_sp=eConv2StopperDist)
+    # Move
+# -----------------------------------------------------------------------
+    if 'robotJoint1TargetSpeed' in recieve_data and 'robotJoint1TargetDistance' in recieve_data:
+        robot_joint_1_motor.run_to_abs_pos(speed_sp=recieve_data['robotJoint1TargetSpeed'], position_sp=recieve_data['robotJoint1TargetDistance'], stop_action = 'hold')
+    
+    if 'robotJoint2TargetSpeed' in recieve_data and 'robotJoint2TargetDistance' in recieve_data:
+        robot_joint_2_motor.run_to_abs_pos(speed_sp=recieve_data['robotJoint2TargetSpeed'], position_sp=recieve_data['robotJoint2TargetDistance'], stop_action = 'hold')
+    
+    if 'robotHandTargetSpeed' in recieve_data and 'robotHandTargetDistance' in recieve_data:
+        robot_hand_motor.run_to_abs_pos(speed_sp=recieve_data['robotHandTargetSpeed'], position_sp=recieve_data['robotHandTargetDistance'], stop_action = 'hold')
+# -----------------------------------------------------------------------
 
     # sleep
     time.sleep(0.1)

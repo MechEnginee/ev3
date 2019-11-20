@@ -68,7 +68,7 @@ while True:
     ev3_socket.send(send_msg.encode())
 
     # Recieve Data
-    recieve_msg = ev3_socket.recv(1024)
+    recieve_msg = ev3_socket.recv(1024).decode()
     recieve_data = json.loads(recieve_msg)
 
     # Move
@@ -77,7 +77,7 @@ while True:
         conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
     
     if 'eConv2TargetSpeed' in recieve_data:
-        conv1_motor.run_forever(speed_sp=recieve_data['eConv2TargetSpeed'])
+        conv2_motor.run_forever(speed_sp=recieve_data['eConv2TargetSpeed'])
 
     if 'eConv2StopperTargetSpeed' in recieve_data and 'eConv2StopperTargetDistance' in recieve_data:
         stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')

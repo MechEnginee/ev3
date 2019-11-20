@@ -12,6 +12,7 @@ def load_server_ip_port(ini_path='server.ini'):
 
 # Socket Initializing
 address = load_server_ip_port()
+print(address)
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(address)
@@ -33,6 +34,7 @@ while True:
     client_socket, client_addr = server_socket.accept()
     ev3_name = client_socket.recv(1024).decode()
 
+    print(ev3_name + ' is connected')
     threading.Thread(target=ev3_logic[ev3_name], args=(client_socket, client_addr, data)).start()
 
 

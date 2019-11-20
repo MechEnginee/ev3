@@ -45,7 +45,7 @@ def logic_ev3_1(client_socket, client_addr, data):
                     data['eConv2StopperTargetSpeed'] = read_move('stopper', 'off_speed')
                     data['eConv2StopperTargetDistance'] = read_move('stopper', 'off_dist')
 
-
+            # Total Stop Button
             if 'totalConvStopSensor' in data and data['totalConvStopSensor'] == 1:
                 # Conveyor
                 data['eConv1TargetSpeed'] = read_move('conveyor', 'stop_speed')
@@ -77,11 +77,19 @@ def logic_ev3_2(client_socket, client_addr, data):
             save_data(data, recieved_data)
 
             # 3. Logic
+            # Robot
+            # TODO:
 
 
 
-
-
+            # Total Stop Button
+            if 'totalConvStopSensor' in data and data['totalConvStopSensor'] == 1:
+                data['robotJoint1TargetDistance'] = read_move('robot_off', 'motor1_dist')
+                data['robotJoint1TargetSpeed'] = read_move('robot_off', 'motor1_speed')
+                data['robotJoint2TargetDistance'] = read_move('robot_off', 'motor2_dist')
+                data['robotJoint2TargetSpeed'] = read_move('robot_off', 'motor2_speed')
+                data['robotHandTargetDistance'] = read_move('robot_off', 'motor3_dist')
+                data['robotHandTargetSpeed'] = read_move('robot_off', 'motor3_speed')
 
             # 4. Make Return Data
             return_data = make_return_data(data, recieved_data['request'])
