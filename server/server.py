@@ -21,6 +21,9 @@ server_socket.listen(10)
 # Data
 data = dict()
 
+# Log Thread
+threading.Thread(target=log_thread, args=(data)).start()
+
 # Logic Setting
 ev3_logic = dict()
 ev3_logic['ev3_1'] = logic.logic_ev3_1
