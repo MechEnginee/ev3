@@ -43,8 +43,8 @@ while True:
 
 # -----------------------------------------------------------------------
     # Get Sensor Values
-    send_data['tM3_sensor'] = tM3_sensor.reflected_light_intensity
-    send_data['tM4_sensor'] = tM4_sensor.reflected_light_intensity
+    send_data['tM3Sensor'] = tM3_sensor.reflected_light_intensity
+    send_data['tM4Sensor'] = tM4_sensor.reflected_light_intensity
 
     # Get Motor Speed
 
