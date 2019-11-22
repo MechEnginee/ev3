@@ -38,7 +38,7 @@ address = (ip, port)
 # Connecting
 ev3_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_socket.connect(address)
-ev3_socket.send(ev3_name.encode())
+ev3_socket.send(ev3_name.encode('utf-8'))
 
 while True:
     send_data = dict()
@@ -59,28 +59,38 @@ while True:
     send_data['request'].append('eConv2TargetSpeed')
     send_data['request'].append('eConv2StopperTargetSpeed')
     send_data['request'].append('eConv2StopperTargetDistance')
+    send_data['request'].append('totalConvStopSensor')
 # -----------------------------------------------------------------------
 
     # Make Send Data
     send_msg = json.dumps(send_data)
 
     # Send Data
-    ev3_socket.send(send_msg.encode())
+    ev3_socket.send(send_msg.encode('utf-8'))
 
     # Recieve Data
-    recieve_msg = ev3_socket.recv(1024).decode()
-    recieve_data = json.loads(recieve_msg)
+    try:
+        recieve_msg = ev3_socket.recv(1024).decode('utf-8')
+        recieve_data = json.loads(recieve_msg)
+    except ValueError:  # includes simplejson.decoder.JSONDecodeError
+        print ('Decoding JSON has failed')
 
     # Move
 # -----------------------------------------------------------------------
-    if 'eConv1TargetSpeed' in recieve_data:
-        conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
-    
-    if 'eConv2TargetSpeed' in recieve_data:
-        conv2_motor.run_forever(speed_sp=recieve_data['eConv2TargetSpeed'])
+    if 'totalConvStopSensor' in recieve_data and recieve_data['totalConvStopSensor']==1:
+        conv1_motor.run_forever(speed_sp=0)
+        conv2_motor.run_forever(speed_sp=0)
+        stopper_motor.run_to_abs_pos(speed_sp=0, position_sp=0, stop_action = 'hold')
+        stopper_motor.wait_while('running')
+        break
 
-    if 'eConv2StopperTargetSpeed' in recieve_data and 'eConv2StopperTargetDistance' in recieve_data:
-        stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')
+    else :
+        try:
+            conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
+            conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
+            stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')
+        except:
+            print('something is null')
 # -----------------------------------------------------------------------
 
     # sleep
