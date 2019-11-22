@@ -55,6 +55,7 @@ while True:
 
     # Request
     send_data['request'] = []
+    send_data['request'].append('totalConvStopSensor')
     send_data['request'].append('eConv1TargetSpeed')
     send_data['request'].append('eConv2TargetSpeed')
     send_data['request'].append('eConv2StopperTargetSpeed')
@@ -77,7 +78,7 @@ while True:
 
     # Move
 # -----------------------------------------------------------------------
-    if 'totalConvStopSensor' in recieve_data and recieve_data['totalConvStopSensor']==1:
+    if recieve_data['eConv1TargetSpeed']==0:
         conv1_motor.run_forever(speed_sp=0)
         conv2_motor.run_forever(speed_sp=0)
         stopper_motor.run_to_abs_pos(speed_sp=0, position_sp=0, stop_action = 'hold')
@@ -86,8 +87,8 @@ while True:
 
     else :
         try:
-            conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
-            conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
+            #conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
+            #conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
             stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')
         except:
             print('something is null')

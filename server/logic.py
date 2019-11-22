@@ -56,7 +56,7 @@ def logic_ev3_1(client_socket, client_addr, data):
             # -----------------------------------------------------------------------
             # 3.1 Stopper
             if 'eConv2StopperSensor' in data:
-                if data['eConv2StopperSensor'] > read_move('stopper', 'threshold'):
+                if data['eConv2StopperSensor'] > 2:
                     data['eConv2StopperTargetSpeed'] = read_move('stopper', 'on_speed')
                     data['eConv2StopperTargetDistance'] = read_move('stopper', 'on_dist')
                 else:
@@ -103,45 +103,82 @@ def logic_ev3_2(client_socket, client_addr, data):
             # Robot
             # TODO:
             #test machine search
-            if 'eConv2StopperSensor' in data:
-                if data['eConv2StopperSensor'] > read_move('stopper', 'threshold'):
-                    data['Movename'] = 'c1_to_t1'
-                    data['robotJoint1TargetSpeed'] = read_move('c1_to_t1', 'motor1_speed')
-                    data['robotJoint1TargetDistance'] = read_move('c1_to_t1', 'motor1_dist')
-                    data['robotJoint2TargetSpeed'] = read_move('c1_to_t1', 'motor2_speed')
-                    data['robotJoint2Target1Distance'] = read_move('c1_to_t1', 'motor2_1_dist')
-                    data['robotJoint2Target2Distance'] = read_move('c1_to_t1', 'motor2_2_dist')
-                    data['robotJoint2Target3Distance'] = read_move('c1_to_t1', 'motor2_3_dist')
-                    data['robotHandTargetSpeed'] = read_move('c1_to_t1', 'motor3_speed')
-                    data['robotHandOnTargetDistance'] = read_move('c1_to_t1', 'motor3_handon_dist')
-                    data['robotHandOffTargetDistance'] = read_move('c1_to_t1', 'motor3_handoff_dist')
-
-            #         # data['robotJoint1TargetDistance'] = data['robot_base_zero_point']
-            #         # data['robotJoint2TargetDistance'] = data['robot_elbow_zero_point']
-            #         # data['robotHandTargetDistance'] = data['robot_hand_zero_point']
-
-            else : 
-                data['robotJoint1TargetSpeed'] = read_move('c1_to_t1', 'motor1_speed')
-                data['robotJoint2TargetSpeed'] = read_move('c1_to_t1', 'motor2_speed')
-                data['robotHandTargetSpeed'] = read_move('c1_to_t1', 'motor3_speed')
+            search = list()
+            search.append(data['tM1Sensor'])
+            search.append(data['tM2Sensor'])
+            search.append(data['tM3Sensor'])
+            search.append(data['tM4Sensor'])
+            print(search)
+            for i, value in enumerate(search):
+                print(data)
+                if (data['eConv2StopperSensor'] > 1 and search.index(i)==0):#검사기에 물체가 있고, test machine 중에 1개라도 비어 있을 때
+                    data['Movename'] = 'c_to_t'
+                    data['robotJoint1TargetSpeed'] = read_move('c_to_t'+i, 'motor1_speed')
+                    data['robotJoint1TargetDistance'] = read_move('c_to_t'+i, 'motor1_dist')
+                    data['robotJoint2TargetSpeed'] = read_move('c_to_t'+i, 'motor2_speed')
+                    data['robotJoint2Target1Distance'] = read_move('c_to_t'+i, 'motor2_1_dist')
+                    data['robotJoint2Target2Distance'] = read_move('c_to_t'+i, 'motor2_2_dist')
+                    data['robotJoint2Target3Distance'] = read_move('c_to_t'+i, 'motor2_3_dist')
+                    data['robotHandTargetSpeed'] = read_move('c_to_t'+i, 'motor3_speed')
+                    data['robotHandOnTargetDistance'] = read_move('c_to_t'+i, 'motor3_handon_dist')
+                    data['robotHandOffTargetDistance'] = read_move('c_to_t'+i, 'motor3_handoff_dist')
+                    data['robotJoint1Target2Distance'] = 0
+                
+                elif (data['eConv2StopperSensor'] == 0 and search.index(i) > 1): #검사기에 물체가 없고, test machine에 1개라도 들어있을 때
+                    data['Movename'] = 't_to_c'
+                    data['robotJoint1TargetSpeed'] = read_move('t'+i+'_to_c', 'motor1_speed')
+                    data['robotJoint1TargetDistance'] = read_move('t'+i+'_to_c', 'motor1_dist')
+                    data['robotJoint1Target2Distance'] = read_move('t'+i+'_to_c', 'motor1_dist_r')
+                    data['robotJoint2TargetSpeed'] = read_move('t'+i+'_to_c', 'motor2_speed')
+                    data['robotJoint2Target1Distance'] = read_move('t'+i+'_to_c', 'motor2_1_dist')
+                    data['robotJoint2Target2Distance'] = read_move('t'+i+'_to_c', 'motor2_2_dist')
+                    data['robotJoint2Target3Distance'] = read_move('t'+i+'_to_c', 'motor2_3_dist')
+                    data['robotHandTargetSpeed'] = read_move('t'+i+'_to_c', 'motor3_speed')
+                    data['robotHandOnTargetDistance'] = read_move('t'+i+'_to_c', 'motor3_handon_dist')
+                    data['robotHandOffTargetDistance'] = read_move('t'+i+'_to_c', 'motor3_handoff_dist')
+            print(data)
+            if (data['eConv2StopperSensor'] > 1 and data['tM1Sensor']>1 and data['tM2Sensor']>1 and data['tM3Sensor']>1 and data['tM4Sensor']>1):#꽉 차있을 때
+                data['Movename'] = 't_to_c'
+                data['robotJoint1TargetSpeed'] = read_move('t1_to_c', 'motor1_speed')
+                data['robotJoint1TargetDistance'] = read_move('t1_to_c', 'motor1_dist')
+                data['robotJoint1Target2Distance'] = read_move('t1_to_c', 'motor1_dist_r')
+                data['robotJoint2TargetSpeed'] = read_move('t1_to_c', 'motor2_speed')
+                data['robotJoint2Target1Distance'] = read_move('t1_to_c', 'motor2_1_dist')
+                data['robotJoint2Target2Distance'] = read_move('t1_to_c', 'motor2_2_dist')
+                data['robotJoint2Target3Distance'] = read_move('t1_to_c', 'motor2_3_dist')
+                data['robotHandTargetSpeed'] = read_move('t1_to_c', 'motor3_speed')
+                data['robotHandOnTargetDistance'] = read_move('t1_to_c', 'motor3_handon_dist')
+                data['robotHandOffTargetDistance'] = read_move('t1_to_c', 'motor3_handoff_dist')
+            
+            else:# 아예 없는 경우
+                data['Movename'] = 'ini'
+                data['robotJoint1TargetSpeed'] = read_move('robot_off', 'motor1_speed')
                 data['robotJoint1TargetDistance'] = data['robot_base_zero_point']
-                data['robotJoint2TargetDistance'] = data['robot_elbow_zero_point']
-                data['robotHandTargetDistance'] = data['robot_hand_zero_point']
-
-
-
+                data['robotJoint2TargetSpeed'] = read_move('robot_off', 'motor2_speed')
+                data['robotJoint2Target1Distance'] = read_move('robot_off', 'motor2_speed')
+                data['robotJoint2Target2Distance'] = read_move('robot_off', 'motor2_speed')
+                data['robotJoint2Target3Distance'] = read_move('robot_off', 'motor2_speed')
+                data['robotHandTargetSpeed'] = read_move('robot_off', 'motor3_speed')
+                data['robotHandOnTargetDistance'] = read_move('robot_off', 'motor3_dist')
+                data['robotHandOffTargetDistance'] = read_move('robot_off', 'motor3_dist')
+                data['robotJoint1Target2Distance'] = 0
+            print(data)
             # Total Stop Button
             if 'totalConvStopSensor' in data and data['totalConvStopSensor'] == 1:
-                data['TotalStopflag'] = True
-                data['robotJoint1TargetDistance'] = data['robot_base_zero_point']
+                data['Movename'] = 'emergency'
                 data['robotJoint1TargetSpeed'] = read_move('robot_off', 'motor1_speed')
-                data['robotJoint2TargetDistance'] = data['robot_elbow_zero_point']
+                data['robotJoint1TargetDistance'] = data['robot_base_zero_point']
                 data['robotJoint2TargetSpeed'] = read_move('robot_off', 'motor2_speed')
-                data['robotHandTargetDistance'] = data['robot_hand_zero_point']
+                data['robotJoint2Target1Distance'] = read_move('robot_off', 'motor2_speed')
+                data['robotJoint2Target2Distance'] = read_move('robot_off', 'motor2_speed')
+                data['robotJoint2Target3Distance'] = read_move('robot_off', 'motor2_speed')
                 data['robotHandTargetSpeed'] = read_move('robot_off', 'motor3_speed')
+                data['robotHandOnTargetDistance'] = read_move('robot_off', 'motor3_dist')
+                data['robotHandOffTargetDistance'] = read_move('robot_off', 'motor3_dist')
+                data['robotJoint1Target2Distance'] = 0
             
             # -----------------------------------------------------------------------
-                
+        
             # 4. Make Return Data
             return_data = make_return_data(data, recieved_data['request'])
 
@@ -217,7 +254,7 @@ def logic_ev3_4(client_socket, client_addr, data):
             else:
                 data['rConv1TargetSpeed'] = read_move('conveyor', 'move_speed')
                 data['rConv2TargetSpeed'] = read_move('conveyor', 'move_speed')
-
+            print(data)
 
 
 

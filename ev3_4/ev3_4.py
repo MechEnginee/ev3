@@ -94,6 +94,7 @@ while True:
             rconv2_motor.run_forever(speed_sp=-recieve_data['rConv2TargetSpeed'])
             rconv_stopper_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2StopperTargetSpeed'], position_sp=recieve_data['rConv2StopperTargetDistance'], stop_action = 'hold')
             rconv_push_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2PushTargetSpeed'], position_sp=recieve_data['rConv2PushTargetDistance'], stop_action = 'hold')
+
         except:
             print('something is null')
 # -----------------------------------------------------------------------
