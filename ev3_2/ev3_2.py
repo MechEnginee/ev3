@@ -81,60 +81,79 @@ ev3_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_socket.connect(address)
 ev3_socket.send(ev3_name.encode('utf-8'))
 
+def elbow_ini(robotJoint2TargetSpeed, robot_elbow_zero_point):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point, stop_action = 'hold')
+    robot_joint_2_motor.wait_until_not_moving # elbow up to ini
+def hand_ini(robotHandTargetSpeed, robot_hand_zero_point):
+    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point, stop_action = 'hold')
+    robot_hand_motor.wait_until_not_moving    # hand ini
+def base_ini(robotJoint1TargetSpeed, robot_base_zero_point):
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point, stop_action = 'hold')
+    robot_joint_1_motor.wait_until_not_moving    # base ini
+def hand_on(robotHandTargetSpeed, robotHandOnTargetDistance):
+    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOnTargetDistance, stop_action = 'hold')
+    robot_hand_motor.wait_until_not_moving # hand on
+def hand_off(robotHandTargetSpeed, robotHandOffTargetDistance):
+    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOffTargetDistance, stop_action = 'hold')
+    robot_hand_motor.wait_until_not_moving #hand off
+def elbow_down_handoff(robotJoint2TargetSpeed, robotJoint2Target2Distance):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target2Distance), stop_action = 'hold')
+    robot_joint_2_motor.wait_until_not_moving # elbow down to level2
+def elbow_up_to_level3(robotJoint2TargetSpeed, robotJoint2Target3Distance):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target3Distance), stop_action = 'hold')
+    robot_joint_2_motor.wait_until_not_moving # elbow up to level3
+def elbow_down_to_handon(robotJoint2TargetSpeed, robotJoint2Target1Distance):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target1Distance), stop_action = 'hold')
+    robot_joint_2_motor.wait_until_not_moving # elbow down to level1
+def base_from_conv_to_test(robotJoint1TargetSpeed, robotJoint1TargetDistance):
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + (robotJoint1TargetDistance), stop_action = 'hold')
+    robot_joint_1_motor.wait_until_not_moving # base move from conv to test
+def base_from_test_to_rconv(robotJoint1TargetSpeed, robotJoint1Target2Distance):
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + robotJoint1Target2Distance, stop_action = 'hold')
+    robot_joint_1_motor.wait_until_not_moving # base move from test to rconv
+
 
 def c_to_t(robotJoint1TargetSpeed , robotJoint1TargetDistance,
 robotJoint2TargetSpeed, robotJoint2Target1Distance, robotJoint2Target2Distance, robotJoint2Target3Distance,
 robotHandTargetSpeed, robotHandOnTargetDistance, robotHandOffTargetDistance):
+    elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
+    hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
+    base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
 
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point, stop_action = 'hold')
-    robot_joint_2_motor.wait_until_not_moving # elbow up to ini
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point, stop_action = 'hold')
-    robot_hand_motor.wait_until_not_moving    # hand ini
-    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point, stop_action = 'hold')
-    robot_joint_1_motor.wait_until_not_moving    # base ini
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOffTargetDistance, stop_action = 'hold')
-    robot_hand_motor.wait_while('runnung') #hand off
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target1Distance), stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow down
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOnTargetDistance, stop_action = 'hold')
-    robot_hand_motor.wait_while('running') # hand on
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target3Distance), stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow up to level3
-    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + (robotJoint1TargetDistance), stop_action = 'hold')
-    robot_joint_1_motor.wait_while('running') # base to t1
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target2Distance), stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow down to level2
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + (robotHandOffTargetDistance), stop_action = 'hold')
-    robot_hand_motor.wait_while('runnung')    # hand off
+    hand_off(robotHandTargetSpeed, robotHandOffTargetDistance)
+    elbow_down_to_handon(robotJoint2TargetSpeed, robotJoint2Target1Distance)
+    hand_on(robotHandTargetSpeed, robotHandOnTargetDistance)
+    elbow_up_to_level3(robotJoint2TargetSpeed, robotJoint2Target3Distance)
+    base_from_conv_to_test(robotJoint1TargetSpeed, robotJoint1TargetDistance)
+    elbow_down_handoff(robotJoint2TargetSpeed, robotJoint2Target2Distance)
+    hand_off(robotHandTargetSpeed, robotHandOffTargetDistance)
+
+    elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
+    hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
+    base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
+
 
 def t_to_c(robotJoint1TargetSpeed, robotJoint1TargetDistance, robotJoint1Target2Distance,
 robotJoint2TargetSpeed, robotJoint2Target1Distance, robotJoint2Target2Distance, robotJoint2Target3Distance,
 robotHandTargetSpeed, robotHandOnTargetDistance, robotHandOffTargetDistance):
-    print('hi')
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point, stop_action = 'hold')
-    robot_joint_2_motor.wait_until_not_moving # elbow up to ini
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point, stop_action = 'hold')
-    robot_joint_2_motor.wait_until_not_moving    # hand ini
-    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point, stop_action = 'hold')
-    robot_joint_2_motor.wait_until_not_moving    # base ini
-    robot_joint_2_motor.run_to_abs_pos(speed_sp = robotJoint2TargetSpeed, position_sp = robot_elbow_zero_point+ robotJoint2Target3Distance, stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow up to level3
-    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + (robotJoint1TargetDistance), stop_action = 'hold')
-    robot_joint_1_motor.wait_while('runnung')    # base move to test machine
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOffTargetDistance, stop_action = 'hold')
-    robot_hand_motor.wait_while('runnung') #hand off
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target1Distance), stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow down to level1
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOnTargetDistance, stop_action = 'hold')
-    robot_hand_motor.wait_while('running') # hand on
-    robot_joint_2_motor.run_to_abs_pos(speed_sp = robotJoint2TargetSpeed, position_sp = robot_elbow_zero_point+ robotJoint2Target3Distance, stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow up to level3
-    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + robotJoint1Target2Distance, stop_action = 'hold')
-    robot_joint_1_motor.wait_while('runnung')    # base to return conv
-    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target2Distance), stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running') # elbow down to level2
-    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOffTargetDistance, stop_action = 'hold')
-    robot_hand_motor.wait_while('runnung') #hand off
+
+    elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
+    hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
+    base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
+
+    elbow_up_to_level3(robotJoint2TargetSpeed, robotJoint2Target3Distance)
+    base_from_conv_to_test(robotJoint1TargetSpeed, robotJoint1TargetDistance)
+    hand_off(robotHandTargetSpeed, robotHandOffTargetDistance)
+    elbow_down_to_handon(robotJoint2TargetSpeed, robotJoint2Target1Distance)
+    hand_on(robotHandTargetSpeed, robotHandOnTargetDistance)
+    elbow_up_to_level3(robotJoint2TargetSpeed, robotJoint2Target3Distance)
+    base_from_test_to_rconv(robotJoint1TargetSpeed, robotJoint1Target2Distance)
+    elbow_down_handoff(robotJoint2TargetSpeed, robotJoint2Target2Distance)
+    hand_off(robotHandTargetSpeed, robotHandOffTargetDistance)
+
+    elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
+    hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
+    base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
 
 
 
