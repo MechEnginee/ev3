@@ -20,6 +20,8 @@ def load_config(ini_path):
 # Sensor
 conv1_entry_sensor = ev3.ColorSensor('in1')
 conv2_entry_sensor = ev3.UltrasonicSensor('in2')
+tM1_sensor = ev3.ColorSensor('in3')
+tM2_sensor = ev3.ColorSensor('in4')
 
 # Motor
 conv1_motor = ev3.Motor('outA')
@@ -30,7 +32,6 @@ stopper_motor = ev3.Motor('outC')
 ev3_name = 'ev3_1'
 # -----------------------------------------------------------------------
 
-
 # Socket Setting
 ip, port = load_config(ev3_name + '.ini')
 address = (ip, port)
@@ -40,6 +41,8 @@ ev3_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_socket.connect(address)
 ev3_socket.send(ev3_name.encode('utf-8'))
 
+
+
 while True:
     send_data = dict()
 
@@ -47,6 +50,8 @@ while True:
     # Get Sensor Values
     send_data['eConv1EntrySensor'] = conv1_entry_sensor.reflected_light_intensity
     send_data['eConv2EntrySensor'] = conv2_entry_sensor.distance_centimeters
+    send_data['tM1Sensor'] = tM1_sensor.reflected_light_intensity
+    send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
 
     # Get Motor Speed
     send_data['eConv1Speed'] = conv1_motor.speed
@@ -78,10 +83,10 @@ while True:
 
     # Move
 # -----------------------------------------------------------------------
-    if recieve_data['eConv1TargetSpeed']==0:
+    if 'totalConvStopSensor' in recieve_data and recieve_data['totalConvStopSensor'] == 1:
         conv1_motor.run_forever(speed_sp=0)
         conv2_motor.run_forever(speed_sp=0)
-        stopper_motor.run_to_abs_pos(speed_sp=0, position_sp=0, stop_action = 'hold')
+        stopper_motor.run_to_abs_pos(speed_sp=100, position_sp=0, stop_action = 'hold')
         stopper_motor.wait_while('running')
         break
 
@@ -90,6 +95,7 @@ while True:
             #conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
             #conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
             stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')
+            
         except:
             print('something is null')
 # -----------------------------------------------------------------------

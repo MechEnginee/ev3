@@ -2,6 +2,7 @@ import socket
 import threading
 import json
 import configparser
+import time
 import logic
 
 
@@ -21,8 +22,7 @@ server_socket.listen(10)
 # Data
 data = dict()
 
-# # Log Thread
-# threading.Thread(target=log_thread, args=(data)).start()
+
 
 # Logic Setting
 ev3_logic = dict()
@@ -34,10 +34,32 @@ ev3_logic['ev3_5'] = logic.logic_ev3_5
 
 
 while True:
-    client_socket, client_addr = server_socket.accept()
-    ev3_name = client_socket.recv(1024).decode('utf-8')
 
-    print(ev3_name + ' is connected')
-    threading.Thread(target=ev3_logic[ev3_name], args=(client_socket, client_addr, data)).start()
+    try:
+        #Log Thread
+        dbthread = logic.log_thread
+        threading.Thread(target=dbthread, args=(data,)).start()
+
+        client_socket, client_addr = server_socket.accept()
+        ev3_name = client_socket.recv(1024).decode('utf-8')
+
+        print(ev3_name + ' is connected')
+        threading.Thread(target=ev3_logic[ev3_name], args=(client_socket, client_addr, data)).start()
+        print(data)
+    except:
+
+        pass
+
+    
+
+
+    
+
+
+    
+    
+
+
+
 
 

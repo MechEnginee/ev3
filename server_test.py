@@ -3,7 +3,7 @@ import threading
 import json
 
 ip = '10.81.98.63'
-port = 8080
+port = 8001
 address = (ip, port)
 
 
