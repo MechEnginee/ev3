@@ -45,9 +45,8 @@ while True:
 
         print(ev3_name + ' is connected')
         threading.Thread(target=ev3_logic[ev3_name], args=(client_socket, client_addr, data)).start()
-        print(data)
     except:
-
+        print('db error')
         pass
 
     

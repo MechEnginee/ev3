@@ -17,8 +17,8 @@ def make_return_data(data, request_keys):
     for request_key in request_keys:
         if request_key in data:
             return_data[request_key] = data[request_key]
-        # else:
-        #     return_data[request_key] = 0
+        else:
+            return_data[request_key] = 0
 
     return return_data
 
@@ -32,6 +32,7 @@ def search_test_machine_1(tM1,tM2,tM3,tM4):#비어있는 test machine기 탐색
     search =[tM1,tM2,tM3,tM4]
     Trigger = True
     number = 1
+
     for i, value in enumerate(search):
         if(value==0):
             Trigger = False
@@ -45,6 +46,7 @@ def search_test_machine_2(tM1,tM2,tM3,tM4):#차있는 test machine기 탐색
     search =[tM1,tM2,tM3,tM4]
     Trigger = True
     number = 1
+
     for i, value in enumerate(search):
         if(value>1):
             Trigger = False
@@ -56,16 +58,16 @@ def search_test_machine_2(tM1,tM2,tM3,tM4):#차있는 test machine기 탐색
 
 
 def log_thread(data):
-    print('1')
+
     # SQL 쿼리 실행
-    # cursor.execute("CREATE TABLE EV3_Sensor(eConv1EntrySensor int, eConv2EntrySensor float, eConv2StopperSensor int, tM1Sensor int, tM2Sensor int, tM3Sensor int, tM4Sensor int,rConv1EntrySensor float,rConv2EntrySensor float,rConv2StopperSensor float)")
+    # cursor.execute("CREATE TABLE EV3_Sensor(eConv1EntrySensor int, eConv2EntrySensor float, eConv2StopperSensor int, tM1Sensor int, tM2Sensor int, tM3Sensor int, tM4Sensor int,rConv1EntrySensor float,rConv2EntrySensor float,rConv2StopperSensor int)")
     # conn.commit()
     # cursor.execute("CREATE TABLE EV3_Motor(eConv1Speed float, eConv2Speed float, eConv2StopperSpeed float, robotJoint1Speed float, robotJoint2Speed float, robotHandSpeed float, rConv1Speed float,rConv2Speed float,rConv2StopperSpeed float,rConv2PushSpeed float)")
     # conn.commit()
     while True:
-        try:
-                # Sqlite DB Connection
-            conn = sqlite3.connect("C:/Users/TJ/ev3/server/ev3.db")
+        # try:
+            # Sqlite DB Connection
+            conn = sqlite3.connect("C:/Users/TJ/ev3/server/ev3dev.db")
             # Connection 으로부터 Cursor 생성
             cursor = conn.cursor()
             # while True:
@@ -97,15 +99,15 @@ def log_thread(data):
             totalConvStopSensor = data['totalConvStopSensor'] if 'totalConvStopSensor' in data else None
 
             # Insert
-            cursor.execute("INSERT INTO EV3_Sensor VALUES(?,?,?,?,?,?,?,?,?,?)",(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor))
+            cursor.execute("INSERT INTO EV3DEV VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor,eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
             conn.commit()
-            cursor.execute("INSERT INTO EV3_Motor VALUES(?,?,?,?,?,?,?,?,?,?)",(eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
-            conn.commit()
+            # cursor.execute("INSERT INTO EV3_Motor VALUES(?,?,?,?,?,?,?,?,?,?)",(eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
+            # conn.commit()
             
             conn.close()
-            time.sleep(1)
-        except:
-            print('db problem')
+            time.sleep(0.1)
+        # except:
+            # print('db problem')
     
 
 

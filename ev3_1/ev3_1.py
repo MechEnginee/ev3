@@ -21,7 +21,7 @@ def load_config(ini_path):
 conv1_entry_sensor = ev3.ColorSensor('in1')
 conv2_entry_sensor = ev3.UltrasonicSensor('in2')
 tM1_sensor = ev3.ColorSensor('in3')
-tM2_sensor = ev3.ColorSensor('in4')
+tM3_sensor = ev3.ColorSensor('in4')
 
 # Motor
 conv1_motor = ev3.Motor('outA')
@@ -51,7 +51,7 @@ while True:
     send_data['eConv1EntrySensor'] = conv1_entry_sensor.reflected_light_intensity
     send_data['eConv2EntrySensor'] = conv2_entry_sensor.distance_centimeters
     send_data['tM1Sensor'] = tM1_sensor.reflected_light_intensity
-    send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
+    send_data['tM3Sensor'] = tM3_sensor.reflected_light_intensity
 
     # Get Motor Speed
     send_data['eConv1Speed'] = conv1_motor.speed

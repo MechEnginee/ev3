@@ -18,8 +18,8 @@ def load_config(ini_path):
 # ev3 Setting
 # -----------------------------------------------------------------------
 # Sensor
-tM3_sensor = ev3.ColorSensor('in1')
-tM4_sensor = ev3.ColorSensor('in2')
+tM4_sensor = ev3.ColorSensor('in1')
+tM2_sensor = ev3.ColorSensor('in2')
 stopper_sensor = ev3.ColorSensor('in3')
 # Motor
 
@@ -44,7 +44,7 @@ while True:
 # -----------------------------------------------------------------------
     # Get Sensor Values
     send_data['eConv2StopperSensor'] = stopper_sensor.reflected_light_intensity
-    send_data['tM3Sensor'] = tM3_sensor.reflected_light_intensity
+    send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
     send_data['tM4Sensor'] = tM4_sensor.reflected_light_intensity
 
     # Get Motor Speed

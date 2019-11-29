@@ -8,10 +8,12 @@ import struct
 import datetime
 import ev3dev.ev3 as ev3
 import robotarm
+import threading
 
 robot_base_zero_point = 0
 robot_elbow_zero_point = 0
 robot_hand_zero_point = 0
+switch = False
 
 # Utility Functions
 def load_config(ini_path):
@@ -69,8 +71,6 @@ def find_base_zero_point(stopper_sensor_data):
     return robot_base_zero_point
 
 
-
-
 # Socket Setting
 ip, port = load_config(ev3_name + '.ini')
 address = (ip, port)
@@ -113,6 +113,125 @@ while robot_base_zero_point==0:
     time.sleep(0.1)
 
 print(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point)
+# robotJoint1TargetSpeed = 0
+# robotJoint1TargetDistance = 0
+# robotJoint1Target2Distance = 0
+# robotJoint2TargetSpeed = 0
+# robotJoint2Target1Distance = 0
+# robotJoint2Target2Distance = 0
+# robotJoint2Target3Distance = 0
+# robotHandTargetSpeed = 0
+# robotHandOnTargetDistance = 0
+# robotHandOffTargetDistance = 0
+
+# ini = threading.Thread(target=robotarm.ini, args=(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point,))
+
+# c_to_t = threading.Thread(target=robotarm.c_to_t, args=(robotJoint1TargetSpeed, robotJoint1TargetDistance,
+#         robotJoint2TargetSpeed, robotJoint2Target1Distance, robotJoint2Target2Distance, robotJoint2Target3Distance,
+#         robotHandTargetSpeed, robotHandOnTargetDistance, robotHandOffTargetDistance,
+#         robot_hand_zero_point,robot_elbow_zero_point,robot_base_zero_point,))
+
+# t_to_c = threading.Thread(target=robotarm.t_to_c, args=(robotJoint1TargetSpeed , robotJoint1TargetDistance, robotJoint1Target2Distance,
+#         robotJoint2TargetSpeed, robotJoint2Target1Distance, robotJoint2Target2Distance, robotJoint2Target3Distance,
+#         robotHandTargetSpeed, robotHandOnTargetDistance, robotHandOffTargetDistance,
+#         robot_hand_zero_point,robot_elbow_zero_point,robot_base_zero_point,))
+
+# emergency = threading.Thread(target=robotarm.emergency, args=(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point,))
+
+def elbow_ini(robotJoint2TargetSpeed, robot_elbow_zero_point):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point, stop_action = 'hold')
+    robot_joint_2_motor.wait_while('running') # elbow up to ini
+def hand_ini(robotHandTargetSpeed, robot_hand_zero_point):
+    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point, stop_action = 'hold')
+    robot_hand_motor.wait_while('running')    # hand ini
+def base_ini(robotJoint1TargetSpeed, robot_base_zero_point):
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point, stop_action = 'hold')
+    robot_joint_1_motor.wait_while('running')    # base ini
+def hand_on(robotHandTargetSpeed, robotHandOnTargetDistance, robot_hand_zero_point):
+    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOnTargetDistance, stop_action = 'hold')
+    robot_hand_motor.wait_while('running') # hand on
+def hand_off(robotHandTargetSpeed, robotHandOffTargetDistance, robot_hand_zero_point):
+    robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOffTargetDistance, stop_action = 'hold')
+    robot_hand_motor.wait_while('running') #hand off
+def elbow_down_handoff(robotJoint2TargetSpeed, robotJoint2Target2Distance, robot_elbow_zero_point):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target2Distance), stop_action = 'hold')
+    robot_joint_2_motor.wait_while('running') # elbow down to level2
+def elbow_up_to_level3(robotJoint2TargetSpeed, robotJoint2Target3Distance, robot_elbow_zero_point):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target3Distance), stop_action = 'hold')
+    robot_joint_2_motor.wait_while('running') # elbow up to level3
+def elbow_down_to_handon(robotJoint2TargetSpeed, robotJoint2Target1Distance,robot_elbow_zero_point):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target1Distance), stop_action = 'hold')
+    robot_joint_2_motor.wait_while('running') # elbow down to level1
+def base_from_conv_to_test(robotJoint1TargetSpeed, robotJoint1TargetDistance, robot_base_zero_point):
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + (robotJoint1TargetDistance), stop_action = 'hold')
+    robot_joint_1_motor.wait_while('running') # base move from conv to test
+def base_from_test_to_rconv(robotJoint1TargetSpeed, robotJoint1Target2Distance, robot_base_zero_point):
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point + robotJoint1Target2Distance, stop_action = 'hold')
+    robot_joint_1_motor.wait_while('running') # base move from test to rconv
+
+
+def c_to_t(recieve_data):
+    # elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
+    # hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
+    # base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
+    hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'], robot_hand_zero_point)
+    elbow_down_to_handon(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'], robot_elbow_zero_point)
+    hand_on(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], robot_hand_zero_point)
+    elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
+    base_from_conv_to_test(recieve_data['robotJoint1TargetSpeed'], recieve_data['robotJoint1TargetDistance'], robot_base_zero_point)
+    elbow_down_handoff(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target2Distance'], robot_elbow_zero_point)
+    hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'], robot_hand_zero_point)
+
+    elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
+    hand_ini(recieve_data['robotHandTargetSpeed'], robot_hand_zero_point)
+    base_ini(recieve_data['robotJoint1TargetSpeed'], robot_base_zero_point)
+    elbow_ini(recieve_data['robotJoint2TargetSpeed'],robot_elbow_zero_point)
+    global switch
+    switch = False
+
+def t_to_c(recieve_data):
+    # elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
+    # hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
+    # base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
+
+    elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
+    base_from_conv_to_test(recieve_data['robotJoint1TargetSpeed'], recieve_data['robotJoint1TargetDistance'],robot_base_zero_point)
+    hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'],robot_hand_zero_point)
+    elbow_down_to_handon(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'],robot_elbow_zero_point)
+    hand_on(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'],robot_hand_zero_point)
+    elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'],robot_elbow_zero_point)
+    base_from_test_to_rconv(recieve_data['robotJoint1TargetSpeed'], recieve_data['robotJoint1Target2Distance'], robot_base_zero_point)
+    elbow_down_handoff(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target2Distance'], robot_elbow_zero_point)
+    hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'], robot_hand_zero_point)
+
+    elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
+    hand_ini(recieve_data['robotHandTargetSpeed'], robot_hand_zero_point)
+    base_ini(recieve_data['robotJoint1TargetSpeed'], robot_base_zero_point)
+    elbow_ini(recieve_data['robotJoint2TargetSpeed'], robot_elbow_zero_point)
+    global switch
+    switch = False
+
+def ini(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point):
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_elbow_zero_point, stop_action = 'hold')
+    robot_joint_2_motor.wait_until_not_moving
+    robot_hand_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_hand_zero_point, stop_action = 'hold')
+    robot_hand_motor.wait_until_not_moving
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_base_zero_point, stop_action = 'hold')
+    robot_joint_1_motor.wait_until_not_moving
+
+
+
+
+def emergency(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point):
+
+    robot_joint_2_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_elbow_zero_point, stop_action = 'hold')
+    robot_joint_2_motor.wait_while('running')
+    robot_hand_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_hand_zero_point, stop_action = 'hold')
+    robot_hand_motor.wait_while('running')
+    robot_joint_1_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_base_zero_point, stop_action = 'hold')
+    robot_joint_1_motor.wait_while('running')
+    global switch
+    switch = False
 
 
 
@@ -147,7 +266,7 @@ while True:
     send_data['request'].append('robotHandOnTargetDistance')
     send_data['request'].append('robotHandOffTargetDistance')
 
-
+    
 # -----------------------------------------------------------------------
     try:
         # Make Send Data
@@ -164,39 +283,52 @@ while True:
         recieve_data = json.loads(recieve_msg)
     except ValueError:  # includes simplejson.decoder.JSONDecodeError
         print ('Decoding JSON has failed')
-        
+
     # Move
 # -----------------------------------------------------------------------
     #totalStopMove
-    # try:
+
+    if switch == False:
+        #try:
+        if 'Movename' in recieve_data and recieve_data['Movename'] == 'emergency': # emergency situation
+            print(recieve_data['Movename'])
+            emergency = threading.Thread(target=emergency, args=(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point,))
+            emergency.start()
+            emergency.join()
+            break
+
+        elif 'Movename' in recieve_data and recieve_data['Movename'] == 'c_to_t': # conv to test machine
+            print(recieve_data['Movename'])
+            ctot = threading.Thread(target=c_to_t, args=(recieve_data,))
+            ctot.start()
+            switch = True
+            # robotarm.c_to_t(recieve_data['robotJoint1TargetSpeed'] , recieve_data['robotJoint1TargetDistance'],
+            # recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'], recieve_data['robotJoint2Target2Distance'], recieve_data['robotJoint2Target3Distance'],
+            # recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], recieve_data['robotHandOffTargetDistance'],
+            # robot_hand_zero_point,robot_elbow_zero_point,robot_base_zero_point)
         
-    if 'Movename' in recieve_data and recieve_data['Movename'] == 'emergency': # emergency situation
-        print(recieve_data['Movename'])
-        robotarm.emergency(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point)
-        break
+        elif 'Movename' in recieve_data and recieve_data['Movename'] == 't_to_c': # test machine to conv
+            print(recieve_data['Movename'])
+            ttoc = threading.Thread(target=t_to_c, args=(recieve_data,))
+            ttoc.start()
+            switch = True
+            # robotarm.t_to_c(recieve_data['robotJoint1TargetSpeed'] , recieve_data['robotJoint1TargetDistance'], recieve_data['robotJoint1Target2Distance'],
+            # recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'], recieve_data['robotJoint2Target2Distance'], recieve_data['robotJoint2Target3Distance'],
+            # recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], recieve_data['robotHandOffTargetDistance'],
+            # robot_hand_zero_point,robot_elbow_zero_point,robot_base_zero_point)
 
-    elif 'Movename' in recieve_data and recieve_data['Movename'] == 'c_to_t': # conv to test machine
-        print(recieve_data['Movename'])
-        robotarm.c_to_t(recieve_data['robotJoint1TargetSpeed'] , recieve_data['robotJoint1TargetDistance'],
-        recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'], recieve_data['robotJoint2Target2Distance'], recieve_data['robotJoint2Target3Distance'],
-        recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], recieve_data['robotHandOffTargetDistance'],
-        robot_hand_zero_point,robot_elbow_zero_point,robot_base_zero_point)
-    
-    elif 'Movename' in recieve_data and recieve_data['Movename'] == 't_to_c': # test machine to conv
-        print(recieve_data['Movename'])
-        robotarm.t_to_c(recieve_data['robotJoint1TargetSpeed'] , recieve_data['robotJoint1TargetDistance'], recieve_data['robotJoint1Target2Distance'],
-        recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'], recieve_data['robotJoint2Target2Distance'], recieve_data['robotJoint2Target3Distance'],
-        recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], recieve_data['robotHandOffTargetDistance'],
-        robot_hand_zero_point,robot_elbow_zero_point,robot_base_zero_point)
+        elif 'Movename' in recieve_data and recieve_data['Movename'] == 'ini': # robot initialize
+            print(recieve_data['Movename'])
+            ini(robot_elbow_zero_point,robot_hand_zero_point,robot_base_zero_point)
+            # ini = threading.Thread(target=ini, args=(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point,))
+            # ini.start()
+            # ini.join()
 
-    elif 'Movename' in recieve_data and recieve_data['Movename'] == 'ini': # robot initialize
-        print(recieve_data['Movename'])
-        robotarm.ini(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point)
-    # except:
-    #     print('something is none')
-
+        #except:
+            # print('something is none')
 
         
+   
 # -----------------------------------------------------------------------
 
     # sleep
