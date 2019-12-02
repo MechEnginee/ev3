@@ -97,9 +97,11 @@ def log_thread(data):
             #ev3_5
             rConv2StopperSensor = data['rConv2StopperSensor'] if 'rConv2StopperSensor' in data else None
             totalConvStopSensor = data['totalConvStopSensor'] if 'totalConvStopSensor' in data else None
+            #Start_Flag
+            Start_Flag = 'Start' if (eConv1EntrySensor and eConv2EntrySensor and tM1Sensor and tM2Sensor and eConv1Speed and eConv2Speed and eConv2StopperSpeed and robotJoint1Speed and robotJoint2Speed and robotHandSpeed and eConv2StopperSensor and tM3Sensor and tM4Sensor and rConv1EntrySensor and rConv2EntrySensor and rConv1Speed and rConv2Speed and rConv2StopperSpeed and rConv2PushSpeed and rConv2StopperSensor and totalConvStopSensor) is not None else None
 
             # Insert
-            cursor.execute("INSERT INTO EV3DEV VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor,eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
+            cursor.execute("INSERT INTO EV3DEV VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(Start_Flag, eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor,eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
             conn.commit()
             # cursor.execute("INSERT INTO EV3_Motor VALUES(?,?,?,?,?,?,?,?,?,?)",(eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
             # conn.commit()
@@ -164,6 +166,7 @@ def logic_ev3_1(client_socket, client_addr, data):
 
 def logic_ev3_2(client_socket, client_addr, data):
     try:
+        print(data)
         while True:
             # 1. Recieve
             msg = client_socket.recv(1024).decode('utf-8')
