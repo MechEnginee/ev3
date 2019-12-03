@@ -48,7 +48,7 @@ def search_test_machine_2(tM1,tM2,tM3,tM4):#차있는 test machine기 탐색
     number = 1
 
     for i, value in enumerate(search):
-        if(value>1):
+        if(value==1):
             Trigger = False
             number = str(i+1)
             break
@@ -56,6 +56,24 @@ def search_test_machine_2(tM1,tM2,tM3,tM4):#차있는 test machine기 탐색
 
     return number, Trigger
 
+def dict_in_list(lists):
+    datalist = list()
+    datadict = dict()
+    keys = ['Start_Flag', 'eConv1EntrySensor', 'eConv2EntrySensor', 'eConv2StopperSensor', 'tM1Sensor', 'tM2Sensor', 'tM3Sensor', 'tM4Sensor', 'rConv1EntrySensor', 'rConv2EntrySensor', 'rConv2StopperSensor' ,'eConv1Speed', 'eConv2Speed', 'eConv2StopperSpeed', 'robotJoint1Speed', 'robotJoint2Speed', 'robotHandSpeed', 'rConv1Speed', 'rConv2Speed', 'rConv2StopperSpeed', 'rConv2PushSpeed']
+    queryData = lists
+    for data in queryData:
+        for i in range(data):
+            datadict[keys[i]] = data[i]
+        datalist.append(datadict)
+    return datalist
+
+def remove_start_column(lists):
+    queryData = lists
+    for data in queryData:
+        for key, value in data.items():
+            if key == 'Start_Flag':
+                del data[key]
+    return queryData
 
 def log_thread(data):
 
@@ -98,13 +116,11 @@ def log_thread(data):
             rConv2StopperSensor = data['rConv2StopperSensor'] if 'rConv2StopperSensor' in data else None
             totalConvStopSensor = data['totalConvStopSensor'] if 'totalConvStopSensor' in data else None
             #Start_Flag
-            Start_Flag = 'Start' if (eConv1EntrySensor and eConv2EntrySensor and tM1Sensor and tM2Sensor and eConv1Speed and eConv2Speed and eConv2StopperSpeed and robotJoint1Speed and robotJoint2Speed and robotHandSpeed and eConv2StopperSensor and tM3Sensor and tM4Sensor and rConv1EntrySensor and rConv2EntrySensor and rConv1Speed and rConv2Speed and rConv2StopperSpeed and rConv2PushSpeed and rConv2StopperSensor and totalConvStopSensor) is not None else None
+            Start_Flag = 'Start' if (eConv1EntrySensor & eConv2EntrySensor & tM1Sensor & tM2Sensor & eConv1Speed & eConv2Speed & eConv2StopperSpeed & robotJoint1Speed & robotJoint2Speed & robotHandSpeed & eConv2StopperSensor & tM3Sensor & tM4Sensor & rConv1EntrySensor & rConv2EntrySensor & rConv1Speed & rConv2Speed & rConv2StopperSpeed & rConv2PushSpeed & rConv2StopperSensor & totalConvStopSensor) != None else None
 
             # Insert
             cursor.execute("INSERT INTO EV3DEV VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(Start_Flag, eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor,eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
             conn.commit()
-            # cursor.execute("INSERT INTO EV3_Motor VALUES(?,?,?,?,?,?,?,?,?,?)",(eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
-            # conn.commit()
             
             conn.close()
             time.sleep(0.1)
@@ -132,7 +148,7 @@ def logic_ev3_1(client_socket, client_addr, data):
             # -----------------------------------------------------------------------
             # 3.1 Stopper
             if 'eConv2StopperSensor' in data:
-                if data['eConv2StopperSensor'] > 1:
+                if data['eConv2StopperSensor'] == 1:
                     data['eConv2StopperTargetSpeed'] = read_move('stopper', 'on_speed')
                     data['eConv2StopperTargetDistance'] = read_move('stopper', 'on_dist')
                 else:
@@ -166,7 +182,6 @@ def logic_ev3_1(client_socket, client_addr, data):
 
 def logic_ev3_2(client_socket, client_addr, data):
     try:
-        print(data)
         while True:
             # 1. Recieve
             msg = client_socket.recv(1024).decode('utf-8')
@@ -181,9 +196,6 @@ def logic_ev3_2(client_socket, client_addr, data):
             #test machine search
 
 
-            #print(data)
-
-
             if len(recieved_data['request']) == 1:
                 # 4. Make Return Data
                 return_data = make_return_data(data, recieved_data['request'])
@@ -195,11 +207,10 @@ def logic_ev3_2(client_socket, client_addr, data):
                 tM2 = int(data['tM2Sensor'])
                 tM3 = int(data['tM3Sensor'])
                 tM4 = int(data['tM4Sensor'])
-                if('eConv2StopperSensor' in data and data['eConv2StopperSensor'] > 1):
+                if('eConv2StopperSensor' in data and data['eConv2StopperSensor'] == 1):
                     number , Trigger = search_test_machine_1(tM1,tM2,tM3,tM4)
                     if (Trigger is False): #물체가 있고, test machine 중에 1개라도 비어 있을 때
                         data['Movename'] = 'c_to_t'
-                        #print(data['Movename'])
                         data['robotJoint1TargetSpeed'] = read_move(('c_to_t'+number), 'motor1_speed')
                         data['robotJoint1TargetDistance'] = read_move(('c_to_t'+number), 'motor1_dist')
                         data['robotJoint2TargetSpeed'] = read_move(('c_to_t'+number), 'motor2_speed')
@@ -209,12 +220,11 @@ def logic_ev3_2(client_socket, client_addr, data):
                         data['robotHandTargetSpeed'] = read_move(('c_to_t'+number), 'motor3_speed')
                         data['robotHandOnTargetDistance'] = read_move(('c_to_t'+number), 'motor3_handon_dist')
                         data['robotHandOffTargetDistance'] = read_move(('c_to_t'+number), 'motor3_handoff_dist')
-                        data['robotJoint1Target2Distance'] = 0
+                        data['robotJoint1Target2Distance'] = 0 # 필요 없는 값 / None이면 에러 발생이기 때문에 추가
                         
                         
                     elif(Trigger):#TODO: 물체가 있고, test machine 꽉 차 있을 때
                         data['Movename'] = 't_to_c'
-                        #print(data['Movename'])
                         data['robotJoint1TargetSpeed'] = read_move('t1_to_c', 'motor1_speed')
                         data['robotJoint1TargetDistance'] = read_move('t1_to_c', 'motor1_dist')
                         data['robotJoint1Target2Distance'] = read_move('t1_to_c', 'motor1_dist_r')
@@ -233,7 +243,6 @@ def logic_ev3_2(client_socket, client_addr, data):
                     number , Trigger = search_test_machine_2(tM1,tM2,tM3,tM4)  
                     if(Trigger is False): # 물체가 없고 Test machine기에 있을 때
                         data['Movename'] = 't_to_c'
-                        #print(data['Movename'])
                         data['robotJoint1TargetSpeed'] = read_move(('t'+number+'_to_c'), 'motor1_speed')
                         data['robotJoint1TargetDistance'] = read_move(('t'+number+'_to_c'), 'motor1_dist')
                         data['robotJoint1Target2Distance'] = read_move(('t'+number+'_to_c'), 'motor1_dist_r')
@@ -247,7 +256,6 @@ def logic_ev3_2(client_socket, client_addr, data):
                         
                     elif(Trigger): # 모두 비어 있을 때
                         data['Movename'] = 'ini'
-                        #print(data['Movename'])
                         data['robotJoint1TargetSpeed'] = read_move('robot_off', 'motor1_speed')
                         data['robotJoint1TargetDistance'] = data['robot_base_zero_point']
                         data['robotJoint2TargetSpeed'] = read_move('robot_off', 'motor2_speed')
@@ -262,7 +270,6 @@ def logic_ev3_2(client_socket, client_addr, data):
                 # Total Stop Button
                 if 'totalConvStopSensor' in data and data['totalConvStopSensor'] == 1:
                     data['Movename'] = 'emergency'
-                    #print(data['Movename'])
                     data['robotJoint1TargetSpeed'] = read_move('robot_off', 'motor1_speed')
                     data['robotJoint1TargetDistance'] = data['robot_base_zero_point']
                     data['robotJoint2TargetSpeed'] = read_move('robot_off', 'motor2_speed')
@@ -327,7 +334,7 @@ def logic_ev3_4(client_socket, client_addr, data):
             # 3. Logic
             # -----------------------------------------------------------------------
             
-            if 'rConv2StopperSensor' in data and (data['rConv2StopperSensor'] > 2):
+            if 'rConv2StopperSensor' in data and (data['rConv2StopperSensor'] == 1):
                 data['rConv2StopperTargetSpeed'] = read_move('stopper', 'on_speed')
                 data['rConv2StopperTargetDistance'] = read_move('stopper', 'on_dist')
                 data['rConv2PushTargetSpeed'] = read_move('push', 'on_speed')
@@ -388,5 +395,51 @@ def logic_ev3_5(client_socket, client_addr, data):
 
             # 5. Send
             #client_socket.send(json.dumps(return_data).encode('utf-8'))
+    except:
+        client_socket.close()
+
+
+def Simulation_data_send(client_socket, client_addr, data):
+    send_data = list()
+    # try:
+    # while True:
+    #log db read
+    # Sqlite DB Connection
+    conn = sqlite3.connect("C:/Users/TJ/ev3/server/ev3dev.db")
+    # Connection 으로부터 Cursor 생성
+    cursor = conn.cursor()
+    # DB Table column key value setting
+    cursor.execute("SELECT * FROM EV3DEV WHERE Start_Flag = 'start'")
+    
+    rows = cursor.fetchall()
+    rowlist = dict_in_list(rows) #({key:value},{key:value},{key:value})
+    send_data = remove_start_column(rowlist)
+
+    #send data
+    for i in range(send_data):
+        client_socket.send(json.dumps(send_data[i]).encode('utf-8'))
+        time.sleep(0.1)
+
+    client_socket.close()
+
+def MCD_IoT(client_socket, client_addr, data):
+    try:
+        while True:
+            # 1. Recieve
+            # msg = client_socket.recv(1024).decode('utf-8')
+            # recieved_data = json.loads(msg)
+
+            # 2. Save Data
+            # save_data(data, recieved_data)
+            #print(data)
+            # 3. Logic
+            # data['rConv2StopperSensor']=recieved_data['rConv2StopperSensor']
+            # data['totalConvStopSensor']=recieved_data['totalConvStopSensor']
+
+            # 4. Make Return Data
+            return_data = data
+
+            # 5. Send
+            client_socket.send(json.dumps(return_data).encode('utf-8'))
     except:
         client_socket.close()

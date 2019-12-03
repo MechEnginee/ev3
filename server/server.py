@@ -31,20 +31,22 @@ ev3_logic['ev3_2'] = logic.logic_ev3_2
 ev3_logic['ev3_3'] = logic.logic_ev3_3
 ev3_logic['ev3_4'] = logic.logic_ev3_4
 ev3_logic['ev3_5'] = logic.logic_ev3_5
-
+ev3_logic['Plant_Simulation'] = logic.Simulation_data_send
+ev3_logic['MCD_IoT'] = logic.MCD_IoT
 
 while True:
 
     try:
         #Log Thread
         dbthread = logic.log_thread
-        threading.Thread(target=dbthread, args=(data,)).start()
+        #threading.Thread(target=dbthread, args=(data,)).start()
 
         client_socket, client_addr = server_socket.accept()
         ev3_name = client_socket.recv(1024).decode('utf-8')
 
         print(ev3_name + ' is connected')
         threading.Thread(target=ev3_logic[ev3_name], args=(client_socket, client_addr, data)).start()
+
     except:
         print('db error')
         pass

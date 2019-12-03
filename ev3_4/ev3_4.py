@@ -62,6 +62,16 @@ while True:
     send_data['request'].append('rConv2StopperTargetDistance')
     send_data['request'].append('rConv2PushTargetSpeed')
     send_data['request'].append('rConv2PushTargetDistance')
+
+    if rConv1EntrySensor.distance_centimeters <= 9:
+        send_data['rConv1EntrySensor'] = 1
+    else:
+        send_data['rConv1EntrySensor'] = 0
+    
+    if rConv2EntrySensor.distance_centimeters <= 10:
+        send_data['rConv2EntrySensor'] = 1
+    else:
+        send_data['rConv2EntrySensor'] = 0
 # -----------------------------------------------------------------------
 
     # Make Send Data

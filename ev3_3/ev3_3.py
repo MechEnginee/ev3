@@ -6,14 +6,28 @@ import configparser
 import json
 import struct
 import datetime
-
+import threading
 import ev3dev.ev3 as ev3
 
+
+switch2 = False
+switch4 = False
+Flag2 = False
+Flag4 = False
 # Utility Functions
 def load_config(ini_path):
     config = configparser.ConfigParser()
     config.read(ini_path)
     return config['config']['ip'], int(config['config']['port'])
+
+def test2_timer():
+    global Flag2
+    time.sleep(5)
+    Flag2 = True
+def test4_timer():
+    global Flag4
+    time.sleep(5)
+    Flag4 = True
 
 # ev3 Setting
 # -----------------------------------------------------------------------
@@ -44,8 +58,54 @@ while True:
 # -----------------------------------------------------------------------
     # Get Sensor Values
     send_data['eConv2StopperSensor'] = stopper_sensor.reflected_light_intensity
-    send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
-    send_data['tM4Sensor'] = tM4_sensor.reflected_light_intensity
+    tM2value = tM2_sensor.reflected_light_intensity
+    tM4value = tM4_sensor.reflected_light_intensity
+    
+    # send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
+    # send_data['tM4Sensor'] = tM4_sensor.reflected_light_intensity
+
+    if stopper_sensor.reflected_light_intensity > 3:
+        send_data['eConv2StopperSensor'] = 1
+    else:
+        send_data['eConv2StopperSensor'] = 0
+
+    if tM2value > 3:
+        if switch2 is False:
+            threading.Thread(target=test2_timer).start()
+            switch2 = True
+            if Flag2 is True:
+                send_data['tM2Sensor'] = 1
+            else:
+                send_data['tM2Sensor'] = 0
+        else :
+            if Flag2 is True:
+                send_data['tM2Sensor'] = 1
+            else:
+                send_data['tM2Sensor'] = 0
+    else:
+        send_data['tM2Sensor'] = 0
+        switch2 = False
+        Flag2 = False
+
+
+    if tM4value > 3:
+        if switch4 is False:
+            threading.Thread(target=test4_timer).start()
+            switch4 = True
+            if Flag4 is True:
+                send_data['tM4Sensor'] = 1
+            else:
+                send_data['tM4Sensor'] = 0
+        else :
+            if Flag4 is True:
+                send_data['tM4Sensor'] = 1    
+            else:
+                send_data['tM4Sensor'] = 0
+    else:
+        send_data['tM4Sensor'] = 0
+        switch4 = False
+        Flag4 = False
+
 
     # Get Motor Speed
 

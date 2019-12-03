@@ -6,14 +6,34 @@ import configparser
 import json
 import struct
 import datetime
-
+import threading
 import ev3dev.ev3 as ev3
+
+switch1 = False
+switch3 = False
+Flag1 = False
+Flag3 = False
 
 # Utility Functions
 def load_config(ini_path):
     config = configparser.ConfigParser()
     config.read(ini_path)
     return config['config']['ip'], int(config['config']['port'])
+
+def test1_timer():
+    global Flag1
+    global switch1
+    time.sleep(5)
+    Flag1 = True
+    # switch1 = False
+    
+
+def test3_timer():
+    global Flag3
+    global switch3
+    time.sleep(5)
+    Flag3 = True
+    # switch3 = False
 
 # ev3 Setting
 # -----------------------------------------------------------------------
@@ -50,8 +70,59 @@ while True:
     # Get Sensor Values
     send_data['eConv1EntrySensor'] = conv1_entry_sensor.reflected_light_intensity
     send_data['eConv2EntrySensor'] = conv2_entry_sensor.distance_centimeters
-    send_data['tM1Sensor'] = tM1_sensor.reflected_light_intensity
-    send_data['tM3Sensor'] = tM3_sensor.reflected_light_intensity
+    if conv1_entry_sensor.reflected_light_intensity > 3:
+        send_data['eConv1EntrySensor'] = 1
+    else:
+        send_data['eConv1EntrySensor'] = 0
+    
+    if conv2_entry_sensor.distance_centimeters <= 9.3:
+        send_data['eConv2EntrySensor'] = 1
+    else:
+        send_data['eConv2EntrySensor'] = 0
+
+    tM1value = tM1_sensor.reflected_light_intensity
+    tM3value = tM3_sensor.reflected_light_intensity
+
+    if tM1value > 3:
+        if switch1 is False:
+            threading.Thread(target=test1_timer).start()
+            switch1 = True
+            if Flag1 is True:
+                send_data['tM1Sensor'] = 1
+            else:
+                send_data['tM1Sensor'] = 0
+        else :
+            if Flag1 is True:
+                send_data['tM1Sensor'] = 1
+                
+            else:
+                send_data['tM1Sensor'] = 0
+
+    else:
+        send_data['tM1Sensor'] = 0
+        switch1 = False
+        Flag1 = False
+
+
+    if tM3value > 5:
+        if switch3 is False:
+            threading.Thread(target=test3_timer).start()
+            switch3 = True
+            if Flag3 is True:
+                send_data['tM3Sensor'] = 1
+            else:
+                send_data['tM3Sensor'] = 0
+        else :
+            if Flag3 is True:
+                send_data['tM3Sensor'] = 1
+                
+            else:
+                send_data['tM3Sensor'] = 0
+    else:
+        send_data['tM3Sensor'] = 0
+        switch3 = False
+        Flag3 = False
+
 
     # Get Motor Speed
     send_data['eConv1Speed'] = conv1_motor.speed

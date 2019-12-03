@@ -45,6 +45,11 @@ while True:
     # Get Sensor Values
     send_data['rConv2StopperSensor'] = rConv2StopperSensor.reflected_light_intensity
     send_data['totalConvStopSensor'] = totalConvStopSensor.value()
+
+    if rConv2StopperSensor.reflected_light_intensity > 3:
+        send_data['rConv2StopperSensor'] = 1
+    else:
+        send_data['rConv2StopperSensor'] = 0
     
 
     # Get Motor Speed
