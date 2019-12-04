@@ -70,41 +70,17 @@ while True:
         send_data['eConv2StopperSensor'] = 0
 
     if tM2value > 3:
-        if switch2 is False:
-            threading.Thread(target=test2_timer).start()
-            switch2 = True
-            if Flag2 is True:
-                send_data['tM2Sensor'] = 1
-            else:
-                send_data['tM2Sensor'] = 0
-        else :
-            if Flag2 is True:
-                send_data['tM2Sensor'] = 1
-            else:
-                send_data['tM2Sensor'] = 0
+        send_data['tM2Sensor'] = 1
     else:
         send_data['tM2Sensor'] = 0
-        switch2 = False
-        Flag2 = False
+
 
 
     if tM4value > 3:
-        if switch4 is False:
-            threading.Thread(target=test4_timer).start()
-            switch4 = True
-            if Flag4 is True:
-                send_data['tM4Sensor'] = 1
-            else:
-                send_data['tM4Sensor'] = 0
-        else :
-            if Flag4 is True:
-                send_data['tM4Sensor'] = 1    
-            else:
-                send_data['tM4Sensor'] = 0
+        send_data['tM4Sensor'] = 1
     else:
         send_data['tM4Sensor'] = 0
-        switch4 = False
-        Flag4 = False
+
 
 
     # Get Motor Speed

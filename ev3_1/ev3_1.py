@@ -9,10 +9,10 @@ import datetime
 import threading
 import ev3dev.ev3 as ev3
 
-switch1 = False
-switch3 = False
-Flag1 = False
-Flag3 = False
+# switch1 = False
+# switch3 = False
+# Flag1 = False
+# Flag3 = False
 
 # Utility Functions
 def load_config(ini_path):
@@ -20,20 +20,18 @@ def load_config(ini_path):
     config.read(ini_path)
     return config['config']['ip'], int(config['config']['port'])
 
-def test1_timer():
-    global Flag1
-    global switch1
-    time.sleep(5)
-    Flag1 = True
-    # switch1 = False
+# def test1_timer():
+#     global Flag1
+#     global switch1
+#     time.sleep(5)
+#     Flag1 = True
     
 
-def test3_timer():
-    global Flag3
-    global switch3
-    time.sleep(5)
-    Flag3 = True
-    # switch3 = False
+# def test3_timer():
+#     global Flag3
+#     global switch3
+#     time.sleep(5)
+#     Flag3 = True
 
 # ev3 Setting
 # -----------------------------------------------------------------------
@@ -84,44 +82,14 @@ while True:
     tM3value = tM3_sensor.reflected_light_intensity
 
     if tM1value > 3:
-        if switch1 is False:
-            threading.Thread(target=test1_timer).start()
-            switch1 = True
-            if Flag1 is True:
-                send_data['tM1Sensor'] = 1
-            else:
-                send_data['tM1Sensor'] = 0
-        else :
-            if Flag1 is True:
-                send_data['tM1Sensor'] = 1
-                
-            else:
-                send_data['tM1Sensor'] = 0
-
+        send_data['tM1Sensor'] = 1
     else:
         send_data['tM1Sensor'] = 0
-        switch1 = False
-        Flag1 = False
 
-
-    if tM3value > 5:
-        if switch3 is False:
-            threading.Thread(target=test3_timer).start()
-            switch3 = True
-            if Flag3 is True:
-                send_data['tM3Sensor'] = 1
-            else:
-                send_data['tM3Sensor'] = 0
-        else :
-            if Flag3 is True:
-                send_data['tM3Sensor'] = 1
-                
-            else:
-                send_data['tM3Sensor'] = 0
+    if tM3value > 3:
+        send_data['tM3Sensor'] = 1
     else:
         send_data['tM3Sensor'] = 0
-        switch3 = False
-        Flag3 = False
 
 
     # Get Motor Speed

@@ -2,6 +2,16 @@ import json
 import configparser
 import time
 import sqlite3
+import threading
+
+switch1 = False
+Flag1 = False
+switch2 = False
+Flag2 = False
+switch3 = False
+Flag3 = False
+switch4 = False
+Flag4 = False
 
 def save_data(data, recieved_data):
     for key, value in recieved_data.items():
@@ -52,9 +62,102 @@ def search_test_machine_2(tM1,tM2,tM3,tM4):#차있는 test machine기 탐색
             Trigger = False
             number = str(i+1)
             break
-    
 
     return number, Trigger
+
+def timer(tM1, tM2, tM3, tM4):
+    global switch1
+    global Flag1
+    global switch2
+    global Flag2
+    global switch3
+    global Flag3
+    global switch4
+    global Flag4
+    tM1_t = 0
+    tM2_t = 0
+    tM3_t = 0
+    tM4_t = 0
+    if tM1 == 1:
+        if switch1 == False:
+            threading.Thread(target=test1_timer).start()
+            switch1 = True
+        else:
+            if Flag1 == True:
+                tM1_t = 1
+            else:
+                tM1_t = 0
+    else:
+        tM1_t = 0
+        switch1 = False
+        Flag1 = False
+    
+    if tM2 == 1:
+        if switch2 == False:
+            threading.Thread(target=test2_timer).start()
+            switch2 = True
+        else:
+            if Flag2 == True:
+                tM2_t = 1
+            else:
+                tM2_t = 0
+    else:
+        tM2_t = 0
+        switch2 = False
+        Flag2 = False
+    
+    if tM3 == 1:
+        if switch3 == False:
+            threading.Thread(target=test3_timer).start()
+            switch3 = True
+        else:
+            if Flag3 == True:
+                tM3_t = 1
+            else:
+                tM3_t = 0
+    else:
+        tM3_t = 0
+        switch3 = False
+        Flag3 = False
+    
+    if tM4 == 1:
+        if switch4 == False:
+            threading.Thread(target=test4_timer).start()
+            switch4 = True
+        else:
+            if Flag4 == True:
+                tM4_t = 1
+            else:
+                tM4_t = 0
+    else:
+        tM4_t = 0
+        switch4 = False
+        Flag4 = False
+    return tM1_t, tM2_t, tM3_t, tM4_t
+
+def test1_timer():
+    global Flag1
+    global switch1
+    time.sleep(5)
+    Flag1 = True
+
+def test2_timer():
+    global Flag2
+    global switch2
+    time.sleep(5)
+    Flag2 = True
+
+def test3_timer():
+    global Flag3
+    global switch3
+    time.sleep(5)
+    Flag3 = True
+
+def test4_timer():
+    global Flag4
+    global switch4
+    time.sleep(5)
+    Flag4 = True
 
 def dict_in_list(lists):
     datalist = list()
@@ -194,8 +297,11 @@ def logic_ev3_2(client_socket, client_addr, data):
             # -----------------------------------------------------------------------
             # Robot
             #test machine search
-
-
+            tM1 = int(data['tM1Sensor'])
+            tM2 = int(data['tM2Sensor'])
+            tM3 = int(data['tM3Sensor'])
+            tM4 = int(data['tM4Sensor'])
+            tM1_t, tM2_t, tM3_t, tM4_t = timer(tM1, tM2, tM3, tM4)
             if len(recieved_data['request']) == 1:
                 # 4. Make Return Data
                 return_data = make_return_data(data, recieved_data['request'])
@@ -203,10 +309,7 @@ def logic_ev3_2(client_socket, client_addr, data):
                 client_socket.send(json.dumps(return_data).encode('utf-8'))
                 
             else:
-                tM1 = int(data['tM1Sensor'])
-                tM2 = int(data['tM2Sensor'])
-                tM3 = int(data['tM3Sensor'])
-                tM4 = int(data['tM4Sensor'])
+
                 if('eConv2StopperSensor' in data and data['eConv2StopperSensor'] == 1):
                     number , Trigger = search_test_machine_1(tM1,tM2,tM3,tM4)
                     if (Trigger is False): #물체가 있고, test machine 중에 1개라도 비어 있을 때
@@ -237,10 +340,9 @@ def logic_ev3_2(client_socket, client_addr, data):
                         data['robotHandOffTargetDistance'] = read_move('t1_to_c', 'motor3_handoff_dist')
                         
 
-
-
                 elif('eConv2StopperSensor' in data and data['eConv2StopperSensor'] == 0): # 물체가 없는 경우
-                    number , Trigger = search_test_machine_2(tM1,tM2,tM3,tM4)  
+
+                    number , Trigger = search_test_machine_2(tM1_t,tM2_t,tM3_t,tM4_t)  
                     if(Trigger is False): # 물체가 없고 Test machine기에 있을 때
                         data['Movename'] = 't_to_c'
                         data['robotJoint1TargetSpeed'] = read_move(('t'+number+'_to_c'), 'motor1_speed')
@@ -399,7 +501,7 @@ def logic_ev3_5(client_socket, client_addr, data):
         client_socket.close()
 
 
-def Simulation_data_send(client_socket, client_addr, data):
+def Simulation_data_send(client_socket, client_addr, data):#TODO:
     send_data = list()
     # try:
     # while True:
@@ -423,23 +525,18 @@ def Simulation_data_send(client_socket, client_addr, data):
     client_socket.close()
 
 def MCD_IoT(client_socket, client_addr, data):
+    keys = ['eConv1EntrySensor', 'eConv2EntrySensor', 'eConv2StopperSensor', 'tM1Sensor', 'tM2Sensor', 'tM3Sensor', 'tM4Sensor', 'rConv1EntrySensor', 'rConv2EntrySensor', 'rConv2StopperSensor' ,'eConv1Speed', 'eConv2Speed', 'eConv2StopperSpeed', 'robotJoint1Speed', 'robotJoint2Speed', 'robotHandSpeed', 'rConv1Speed', 'rConv2Speed', 'rConv2StopperSpeed', 'rConv2PushSpeed']
+    return_data = {}
+    # print(keys)
+    
     try:
         while True:
-            # 1. Recieve
-            # msg = client_socket.recv(1024).decode('utf-8')
-            # recieved_data = json.loads(msg)
 
-            # 2. Save Data
-            # save_data(data, recieved_data)
-            #print(data)
-            # 3. Logic
-            # data['rConv2StopperSensor']=recieved_data['rConv2StopperSensor']
-            # data['totalConvStopSensor']=recieved_data['totalConvStopSensor']
+            # for i in keys:
+            #     return_data[i] = recieved_data[i]
 
-            # 4. Make Return Data
-            return_data = data
-
+            print(recieved_data)
             # 5. Send
-            client_socket.send(json.dumps(return_data).encode('utf-8'))
+            client_socket.send(json.dumps(recieved_data).encode('utf-8'))
     except:
         client_socket.close()

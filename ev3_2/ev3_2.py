@@ -13,7 +13,7 @@ robot_base_zero_point = 0
 robot_elbow_zero_point = 0
 robot_hand_zero_point = 0
 switch = False
-Flag = False
+cnt = 0
 # Utility Functions
 def load_config(ini_path):
     config = configparser.ConfigParser()
@@ -42,7 +42,7 @@ def find_elbow_hand_zero_location():
     #elbow initialize
     robot_joint_2_motor.run_to_abs_pos(speed_sp=100, position_sp=-300, stop_action = 'hold')
     robot_joint_2_motor.wait_until('stalled')
-    robot_elbow_zero_point = robot_joint_2_motor.position + 60
+    robot_elbow_zero_point = robot_joint_2_motor.position + 50
     robot_joint_2_motor.run_to_abs_pos(speed_sp=50, position_sp=robot_elbow_zero_point+40, stop_action = 'hold')
     robot_joint_2_motor.wait_while('running')
     #hand initialize
@@ -65,7 +65,7 @@ def find_base_zero_point(stopper_sensor_data):
         robot_joint_2_motor.wait_while('running')
 
     else : 
-        robot_joint_1_motor.run_to_abs_pos(speed_sp = 100, position_sp = -50, stop_action = 'hold')
+        robot_joint_1_motor.run_to_abs_pos(speed_sp = 100, position_sp = -60, stop_action = 'hold')
 
     return robot_base_zero_point
 
@@ -118,13 +118,13 @@ def elbow_ini(robotJoint2TargetSpeed, robot_elbow_zero_point):
     robot_joint_2_motor.wait_while('running') # elbow up to ini
 def hand_ini(robotHandTargetSpeed, robot_hand_zero_point):
     robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point, stop_action = 'hold')
-    robot_hand_motor.wait_while('running')    # hand ini
+    robot_hand_motor.wait_while('running', timeout=1000)    # hand ini
 def base_ini(robotJoint1TargetSpeed, robot_base_zero_point):
     robot_joint_1_motor.run_to_abs_pos(speed_sp=robotJoint1TargetSpeed, position_sp=robot_base_zero_point, stop_action = 'hold')
     robot_joint_1_motor.wait_while('running')    # base ini
 def hand_on(robotHandTargetSpeed, robotHandOnTargetDistance, robot_hand_zero_point):
     robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOnTargetDistance, stop_action = 'hold')
-    robot_hand_motor.wait_while('running') # hand on
+    robot_hand_motor.wait_until('stalled', timeout=1000) # hand on
 def hand_off(robotHandTargetSpeed, robotHandOffTargetDistance, robot_hand_zero_point):
     robot_hand_motor.run_to_abs_pos(speed_sp=robotHandTargetSpeed, position_sp=robot_hand_zero_point + robotHandOffTargetDistance, stop_action = 'hold')
     robot_hand_motor.wait_while('running') #hand off
@@ -133,7 +133,7 @@ def elbow_down_handoff(robotJoint2TargetSpeed, robotJoint2Target2Distance, robot
     robot_joint_2_motor.wait_while('running') # elbow down to level2
 def elbow_up_to_level3(robotJoint2TargetSpeed, robotJoint2Target3Distance, robot_elbow_zero_point):
     robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target3Distance), stop_action = 'hold')
-    robot_joint_2_motor.wait_while('running', timeout=3000) # elbow up to level3
+    robot_joint_2_motor.wait_while('running', timeout=2000) # elbow up to level3
 def elbow_down_to_handon(robotJoint2TargetSpeed, robotJoint2Target1Distance,robot_elbow_zero_point):
     robot_joint_2_motor.run_to_abs_pos(speed_sp=robotJoint2TargetSpeed, position_sp=robot_elbow_zero_point + (robotJoint2Target1Distance), stop_action = 'hold')
     robot_joint_2_motor.wait_while('running') # elbow down to level1
@@ -148,7 +148,7 @@ def base_from_test_to_rconv(robotJoint1TargetSpeed, robotJoint1Target2Distance, 
 def c_to_t(recieve_data):
     # elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
     # hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
-    # base_ini(robotJoint1TargetSpeed, robot_base_zero_point)
+    base_ini(recieve_data['robotJoint1TargetSpeed'], robot_base_zero_point)
     hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'], robot_hand_zero_point)
     elbow_down_to_handon(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target1Distance'], robot_elbow_zero_point)
     hand_on(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], robot_hand_zero_point)
@@ -160,11 +160,11 @@ def c_to_t(recieve_data):
     elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
     hand_ini(recieve_data['robotHandTargetSpeed'], robot_hand_zero_point)
     # base_ini(recieve_data['robotJoint1TargetSpeed'], robot_base_zero_point)
-    elbow_ini(recieve_data['robotJoint2TargetSpeed'],robot_elbow_zero_point)
+    # elbow_ini(recieve_data['robotJoint2TargetSpeed'],robot_elbow_zero_point)
     global switch
     switch = False
-    global Flag
-    Flag = False
+    global cnt
+    cnt = 0
 
 def t_to_c(recieve_data):
     # elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
@@ -184,11 +184,11 @@ def t_to_c(recieve_data):
     elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
     hand_ini(recieve_data['robotHandTargetSpeed'], robot_hand_zero_point)
     # base_ini(recieve_data['robotJoint1TargetSpeed'], robot_base_zero_point)
-    elbow_ini(recieve_data['robotJoint2TargetSpeed'], robot_elbow_zero_point)
+    # elbow_ini(recieve_data['robotJoint2TargetSpeed'], robot_elbow_zero_point)
     global switch
     switch = False
-    global Flag
-    Flag = False
+    global cnt
+    cnt = 0
 
 def ini(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point):
     robot_joint_2_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_elbow_zero_point, stop_action = 'hold')
@@ -197,10 +197,6 @@ def ini(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point):
     robot_hand_motor.wait_until_not_moving
     robot_joint_1_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_base_zero_point, stop_action = 'hold')
     robot_joint_1_motor.wait_until_not_moving
-    global Flag
-    Flag = True
-
-
 
 
 def emergency(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point):
@@ -298,11 +294,11 @@ while True:
 
         elif 'Movename' in recieve_data and recieve_data['Movename'] == 'ini': # robot initialize
             print(recieve_data['Movename'])
-            if Flag is False:
-                ini(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point)
-                
-            else :
+            if cnt == 2:
                 pass
+            else :
+                ini(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point)
+                cnt+=1
 
             # ini = threading.Thread(target=ini, args=(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point,))
             # ini.start()
