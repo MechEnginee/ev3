@@ -398,11 +398,14 @@ def logic_ev3_3(client_socket, client_addr, data):
     try:
         while True:
             # 1. Recieve
-            msg = client_socket.recv(1024).decode('utf-8')
-            recieved_data = json.loads(msg)
-
+            try:
+                msg = client_socket.recv(1024).decode('utf-8')
+                recieved_data = json.loads(msg)
+                save_data(data, recieved_data)
+            except:
+                pass
             # 2. Save Data
-            save_data(data, recieved_data)
+            
             #print(data)
             # 3. Logic
             # -----------------------------------------------------------------------
@@ -478,19 +481,18 @@ def logic_ev3_5(client_socket, client_addr, data):
     try:
         while True:
             # 1. Recieve
-            msg = client_socket.recv(1024).decode('utf-8')
-            recieved_data = json.loads(msg)
-
+            try:
+                msg = client_socket.recv(1024).decode('utf-8')
+                recieved_data = json.loads(msg)
+                save_data(data, recieved_data)
+            except:
+                pass
             # 2. Save Data
-            save_data(data, recieved_data)
+            
             #print(data)
             # 3. Logic
             # data['rConv2StopperSensor']=recieved_data['rConv2StopperSensor']
             # data['totalConvStopSensor']=recieved_data['totalConvStopSensor']
-
-
-
-
 
             # 4. Make Return Data
             #return_data = make_return_data(data, recieved_data['request'])
@@ -511,10 +513,10 @@ def Simulation_data_send(client_socket, client_addr, data):#TODO:
     # Connection 으로부터 Cursor 생성
     cursor = conn.cursor()
     # DB Table column key value setting
-    cursor.execute("SELECT * FROM EV3DEV WHERE Start_Flag = 'start'")
+    cursor.execute("SELECT * FROM EV3DEV WHERE Start_Flag = 'Start'")
     
     rows = cursor.fetchall()
-    rowlist = dict_in_list(rows) #({key:value},{key:value},{key:value})
+    rowlist = dict_in_list(rows) #({key:value},{key:value},{key:value},...)
     send_data = remove_start_column(rowlist)
 
     #send data
@@ -527,16 +529,21 @@ def Simulation_data_send(client_socket, client_addr, data):#TODO:
 def MCD_IoT(client_socket, client_addr, data):
     keys = ['eConv1EntrySensor', 'eConv2EntrySensor', 'eConv2StopperSensor', 'tM1Sensor', 'tM2Sensor', 'tM3Sensor', 'tM4Sensor', 'rConv1EntrySensor', 'rConv2EntrySensor', 'rConv2StopperSensor' ,'eConv1Speed', 'eConv2Speed', 'eConv2StopperSpeed', 'robotJoint1Speed', 'robotJoint2Speed', 'robotHandSpeed', 'rConv1Speed', 'rConv2Speed', 'rConv2StopperSpeed', 'rConv2PushSpeed']
     return_data = {}
-    # print(keys)
-    
     try:
         while True:
-
-            # for i in keys:
-            #     return_data[i] = recieved_data[i]
-
-            print(recieved_data)
+            for i in keys:
+                return_data[i] = data[i]
+            try:
+                msg = client_socket.recv(1024).decode('utf-8')
+                # recieved_data = json.loads(msg)
+                if msg == 'A':
+                    client_socket.send(json.dumps(return_data).encode('utf-8'))
+                else:
+                    pass
+            except:
+                pass
             # 5. Send
-            client_socket.send(json.dumps(recieved_data).encode('utf-8'))
+            # client_socket.send(json.dumps(return_data).encode('utf-8'))
+            # time.sleep(0.1)
     except:
         client_socket.close()

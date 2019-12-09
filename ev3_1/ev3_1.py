@@ -59,8 +59,6 @@ ev3_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_socket.connect(address)
 ev3_socket.send(ev3_name.encode('utf-8'))
 
-
-
 while True:
     send_data = dict()
 
@@ -68,7 +66,7 @@ while True:
     # Get Sensor Values
     send_data['eConv1EntrySensor'] = conv1_entry_sensor.reflected_light_intensity
     send_data['eConv2EntrySensor'] = conv2_entry_sensor.distance_centimeters
-    if conv1_entry_sensor.reflected_light_intensity > 3:
+    if conv1_entry_sensor.reflected_light_intensity > 0.5:
         send_data['eConv1EntrySensor'] = 1
     else:
         send_data['eConv1EntrySensor'] = 0
@@ -131,8 +129,8 @@ while True:
 
     else :
         try:
-            #conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
-            #conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
+            conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
+            conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
             stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')
             
         except:
