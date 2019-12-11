@@ -16,7 +16,7 @@ robot_hand_zero_point = 0
 switch = False
 cnt = 0
 handcount = 3
-hand_base_term = -10
+hand_base_term = -20
 # Utility Functions
 def load_config(ini_path):
     config = configparser.ConfigParser()
@@ -163,7 +163,7 @@ def hand_on_again(recieve_data):
     else:
         if robot_hand_motor.position < robot_hand_zero_point + recieve_data['robotHandOnTargetDistance']:
             handcount = 3
-            hand_base_term = -10
+            hand_base_term = -20
             return
         else:
             handcount -= 1
@@ -183,7 +183,7 @@ def hand_on_again_test(recieve_data):
     else:
         if robot_hand_motor.position < robot_hand_zero_point + recieve_data['robotHandOnTargetDistance']:
             handcount = 3
-            hand_base_term = -10
+            hand_base_term = -20
             return
         else:
             handcount -= 1
@@ -290,6 +290,9 @@ while True:
     send_data['robot_base_zero_point'] = robot_base_zero_point
     send_data['robot_elbow_zero_point'] = robot_elbow_zero_point
     send_data['robot_hand_zero_point'] = robot_hand_zero_point
+    send_data['robotJoint1Position'] = robot_joint_1_motor.position
+    send_data['robotJoint2Position'] = robot_joint_2_motor.position
+    send_data['robotHandPosition'] = robot_hand_motor.position
 
     # Request
     send_data['request'] = []

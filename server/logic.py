@@ -384,7 +384,7 @@ def logic_ev3_2(client_socket, client_addr, data):
                     data['robotJoint1Target2Distance'] = 0
             
             # -----------------------------------------------------------------------
-        
+                
                 # 4. Make Return Data
                 return_data = make_return_data(data, recieved_data['request'])
 
@@ -527,23 +527,25 @@ def Simulation_data_send(client_socket, client_addr, data):#TODO:
     client_socket.close()
 
 def MCD_IoT(client_socket, client_addr, data):
-    keys = ['eConv1EntrySensor', 'eConv2EntrySensor', 'eConv2StopperSensor', 'tM1Sensor', 'tM2Sensor', 'tM3Sensor', 'tM4Sensor', 'rConv1EntrySensor', 'rConv2EntrySensor', 'rConv2StopperSensor' ,'eConv1Speed', 'eConv2Speed', 'eConv2StopperSpeed', 'robotJoint1Speed', 'robotJoint2Speed', 'robotHandSpeed', 'rConv1Speed', 'rConv2Speed', 'rConv2StopperSpeed', 'rConv2PushSpeed']
+    keys = ['eConv1EntrySensor', 'eConv2EntrySensor', 'eConv2StopperSensor', 'tM1Sensor', 'tM2Sensor', 'tM3Sensor', 'tM4Sensor', 'rConv1EntrySensor', 'rConv2EntrySensor', 'rConv2StopperSensor' ,'eConv1Speed', 'eConv2Speed', 'eConv2StopperSpeed', 'robotJoint1Speed', 'robotJoint2Speed', 'robotHandSpeed', 'rConv1Speed', 'rConv2Speed', 'rConv2StopperSpeed', 'rConv2PushSpeed','robotJoint1Position','robotJoint2Position','robotHandPosition']
     return_data = {}
     try:
         while True:
             for i in keys:
                 return_data[i] = data[i]
+               
             try:
-                msg = client_socket.recv(1024).decode('utf-8')
+                # msg = client_socket.recv(1024).decode('utf-8')
                 # recieved_data = json.loads(msg)
-                if msg == 'A':
-                    client_socket.send(json.dumps(return_data).encode('utf-8'))
-                else:
-                    pass
+                # if msg == 'A':
+                client_socket.send(json.dumps(return_data).encode('utf-8'))
+                # else:
+                #     pass
             except:
                 pass
             # 5. Send
             # client_socket.send(json.dumps(return_data).encode('utf-8'))
-            # time.sleep(0.1)
+            
+            
     except:
         client_socket.close()

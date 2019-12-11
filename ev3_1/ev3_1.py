@@ -129,8 +129,8 @@ while True:
 
     else :
         try:
-            conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
-            conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
+            #conv1_motor.run_forever(speed_sp=recieve_data['eConv1TargetSpeed'])
+            #conv2_motor.run_forever(speed_sp=-recieve_data['eConv2TargetSpeed'])
             stopper_motor.run_to_abs_pos(speed_sp=recieve_data['eConv2StopperTargetSpeed'], position_sp=recieve_data['eConv2StopperTargetDistance'], stop_action = 'hold')
             
         except:
