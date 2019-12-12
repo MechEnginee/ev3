@@ -39,7 +39,7 @@ while True:
     try:
         #Log Thread
         dbthread = logic.log_thread
-        #threading.Thread(target=dbthread, args=(data,)).start()
+        threading.Thread(target=dbthread, args=(data,)).start()
 
         client_socket, client_addr = server_socket.accept()
         ev3_name = client_socket.recv(1024).decode('utf-8')

@@ -138,25 +138,25 @@ def timer(tM1, tM2, tM3, tM4):
 def test1_timer():
     global Flag1
     global switch1
-    time.sleep(5)
+    time.sleep(10)
     Flag1 = True
 
 def test2_timer():
     global Flag2
     global switch2
-    time.sleep(5)
+    time.sleep(10)
     Flag2 = True
 
 def test3_timer():
     global Flag3
     global switch3
-    time.sleep(5)
+    time.sleep(10)
     Flag3 = True
 
 def test4_timer():
     global Flag4
     global switch4
-    time.sleep(5)
+    time.sleep(10)
     Flag4 = True
 
 def dict_in_list(lists):
@@ -186,7 +186,7 @@ def log_thread(data):
     # cursor.execute("CREATE TABLE EV3_Motor(eConv1Speed float, eConv2Speed float, eConv2StopperSpeed float, robotJoint1Speed float, robotJoint2Speed float, robotHandSpeed float, rConv1Speed float,rConv2Speed float,rConv2StopperSpeed float,rConv2PushSpeed float)")
     # conn.commit()
     while True:
-        # try:
+        try:
             # Sqlite DB Connection
             conn = sqlite3.connect("C:/Users/TJ/ev3/server/ev3dev.db")
             # Connection 으로부터 Cursor 생성
@@ -204,6 +204,9 @@ def log_thread(data):
             robotJoint1Speed = data['robotJoint1Speed'] if 'robotJoint1Speed' in data else None
             robotJoint2Speed = data['robotJoint2Speed'] if 'robotJoint2Speed' in data else None
             robotHandSpeed = data['robotHandSpeed'] if 'robotHandSpeed' in data else None
+            robotJoint1Position = data['robotJoint1Position'] if 'robotJoint1Position' in data else None
+            robotJoint2Position = data['robotJoint2Position'] if 'robotJoint2Position' in data else None
+            robotHandPosition = data['robotHandPosition'] if 'robotHandPosition' in data else None
             #ev3_3
             eConv2StopperSensor = data['eConv2StopperSensor']  if 'eConv2StopperSensor' in data else None
             tM3Sensor = data['tM3Sensor'] if 'tM3Sensor' in data else None
@@ -219,16 +222,16 @@ def log_thread(data):
             rConv2StopperSensor = data['rConv2StopperSensor'] if 'rConv2StopperSensor' in data else None
             totalConvStopSensor = data['totalConvStopSensor'] if 'totalConvStopSensor' in data else None
             #Start_Flag
-            Start_Flag = 'Start' if (eConv1EntrySensor & eConv2EntrySensor & tM1Sensor & tM2Sensor & eConv1Speed & eConv2Speed & eConv2StopperSpeed & robotJoint1Speed & robotJoint2Speed & robotHandSpeed & eConv2StopperSensor & tM3Sensor & tM4Sensor & rConv1EntrySensor & rConv2EntrySensor & rConv1Speed & rConv2Speed & rConv2StopperSpeed & rConv2PushSpeed & rConv2StopperSensor & totalConvStopSensor) != None else None
+            Start_Flag = 'Start' if (eConv1EntrySensor and eConv2EntrySensor and tM1Sensor and tM2Sensor and eConv1Speed and eConv2Speed and eConv2StopperSpeed and robotJoint1Speed and robotJoint2Speed and robotHandSpeed and eConv2StopperSensor and tM3Sensor and tM4Sensor and rConv1EntrySensor and rConv2EntrySensor and rConv1Speed and rConv2Speed and rConv2StopperSpeed and rConv2PushSpeed and rConv2StopperSensor and totalConvStopSensor) != None else None
 
             # Insert
-            cursor.execute("INSERT INTO EV3DEV VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(Start_Flag, eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor,eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed))
+            cursor.execute("INSERT INTO EV3DEV VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",(Start_Flag, eConv1EntrySensor, eConv2EntrySensor, eConv2StopperSensor, tM1Sensor, tM2Sensor, tM3Sensor, tM4Sensor,rConv1EntrySensor,rConv2EntrySensor,rConv2StopperSensor,eConv1Speed, eConv2Speed, eConv2StopperSpeed, robotJoint1Speed, robotJoint2Speed, robotHandSpeed, rConv1Speed, rConv2Speed, rConv2StopperSpeed, rConv2PushSpeed,robotJoint1Position,robotJoint2Position,robotHandPosition))
             conn.commit()
             
             conn.close()
             time.sleep(0.1)
-        # except:
-            # print('db problem')
+        except:
+            pass
     
 
 
@@ -440,13 +443,13 @@ def logic_ev3_4(client_socket, client_addr, data):
             # -----------------------------------------------------------------------
             
             if 'rConv2StopperSensor' in data and (data['rConv2StopperSensor'] == 1):
-                data['rConv2StopperTargetSpeed'] = read_move('stopper', 'on_speed')
-                data['rConv2StopperTargetDistance'] = read_move('stopper', 'on_dist')
+                data['rConv2StopperTargetSpeed'] = read_move('stopper2', 'on_speed')
+                data['rConv2StopperTargetDistance'] = read_move('stopper2', 'on_dist')
                 data['rConv2PushTargetSpeed'] = read_move('push', 'on_speed')
                 data['rConv2PushTargetDistance'] = read_move('push', 'on_dist')
             else :
-                data['rConv2StopperTargetSpeed'] = read_move('stopper', 'off_speed')
-                data['rConv2StopperTargetDistance'] = read_move('stopper', 'off_dist')
+                data['rConv2StopperTargetSpeed'] = read_move('stopper2', 'off_speed')
+                data['rConv2StopperTargetDistance'] = read_move('stopper2', 'off_dist')
                 data['rConv2PushTargetSpeed'] = read_move('push', 'off_speed')
                 data['rConv2PushTargetDistance'] = read_move('push', 'off_dist')
           

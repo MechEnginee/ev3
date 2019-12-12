@@ -64,7 +64,7 @@ while True:
     # send_data['tM2Sensor'] = tM2_sensor.reflected_light_intensity
     # send_data['tM4Sensor'] = tM4_sensor.reflected_light_intensity
 
-    if stopper_sensor.reflected_light_intensity > 3:
+    if stopper_sensor.reflected_light_intensity > 1:
         send_data['eConv2StopperSensor'] = 1
     else:
         send_data['eConv2StopperSensor'] = 0

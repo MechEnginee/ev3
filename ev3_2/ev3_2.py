@@ -35,7 +35,9 @@ def load_config(ini_path):
 robot_joint_1_motor = ev3.Motor('outA')
 robot_joint_2_motor = ev3.Motor('outB')
 robot_hand_motor = ev3.Motor('outC')
-
+robot_joint_1_motor.POLARITY_NORMAL
+robot_joint_2_motor.POLARITY_NORMAL
+robot_hand_motor.POLARITY_NORMAL
 # ev3 Name
 ev3_name = 'ev3_2'
 
@@ -64,7 +66,10 @@ def find_base_zero_point(stopper_sensor_data):
     if stopper_sensor_data == 1:
         robot_joint_1_motor.stop
         robot_joint_1_motor.wait_until_not_moving
-        robot_base_zero_point = robot_joint_1_motor.position+20
+        if base_first_target > 0:
+            robot_base_zero_point = robot_joint_1_motor.position
+        else:
+            robot_base_zero_point = robot_joint_1_motor.position+20
         robot_joint_2_motor.run_to_abs_pos(speed_sp=50, position_sp=robot_elbow_zero_point, stop_action = 'hold')
         robot_joint_2_motor.wait_while('running')
 
@@ -116,7 +121,9 @@ while robot_base_zero_point==0:
     robot_base_zero_point = find_base_zero_point(recieve_data['eConv2StopperSensor'])
 
     time.sleep(0.01)
-
+robot_elbow_zero_point = 0
+robot_hand_zero_point = -4
+robot_base_zero_point = -13
 print(robot_elbow_zero_point, robot_hand_zero_point, robot_base_zero_point)
 
 def elbow_ini(robotJoint2TargetSpeed, robot_elbow_zero_point):
@@ -159,6 +166,8 @@ def hand_on_again(recieve_data):
     hand_on(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], robot_hand_zero_point)
     elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
     if handcount == 0:
+        handcount = 3
+        hand_base_term = -20
         return
     else:
         if robot_hand_motor.position < robot_hand_zero_point + recieve_data['robotHandOnTargetDistance']:
@@ -179,6 +188,8 @@ def hand_on_again_test(recieve_data):
     hand_on(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOnTargetDistance'], robot_hand_zero_point)
     elbow_up_to_level3(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target3Distance'], robot_elbow_zero_point)
     if handcount == 0:
+        handcount = 3
+        hand_base_term = -20
         return
     else:
         if robot_hand_motor.position < robot_hand_zero_point + recieve_data['robotHandOnTargetDistance']:
@@ -188,11 +199,11 @@ def hand_on_again_test(recieve_data):
         else:
             handcount -= 1
             hand_base_term = hand_base_term*-1
-            hand_on_again(recieve_data)
+            hand_on_again_test(recieve_data)
     
 
 def c_to_t(recieve_data):
-
+    global handcount
     # elbow_ini(robotJoint2TargetSpeed,robot_elbow_zero_point)
     # hand_ini(robotHandTargetSpeed, robot_hand_zero_point)
     robot_joint_1_motor.run_to_abs_pos(speed_sp=100, position_sp=robot_base_zero_point, stop_action = 'hold')
@@ -207,6 +218,9 @@ def c_to_t(recieve_data):
         pass
     else : # hand on fail
         hand_on_again(recieve_data)
+    # if hand_OX == 0:
+    #     return
+    # else:
     base_from_conv_to_test(recieve_data['robotJoint1TargetSpeed'], recieve_data['robotJoint1TargetDistance'], robot_base_zero_point)
     elbow_down_handoff(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target2Distance'], robot_elbow_zero_point)
     hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'], robot_hand_zero_point)
@@ -219,6 +233,7 @@ def c_to_t(recieve_data):
     switch = False
     global cnt
     cnt = 0
+    handcount = 3
 
 
 def t_to_c(recieve_data):
@@ -238,6 +253,9 @@ def t_to_c(recieve_data):
         pass
     else : # hand on fail
         hand_on_again_test(recieve_data)
+    # if hand_OX == 0:
+    #     return
+    # else:
     base_from_test_to_rconv(recieve_data['robotJoint1TargetSpeed'], recieve_data['robotJoint1Target2Distance'], robot_base_zero_point)
     elbow_down_handoff(recieve_data['robotJoint2TargetSpeed'], recieve_data['robotJoint2Target2Distance'], robot_elbow_zero_point)
     hand_off(recieve_data['robotHandTargetSpeed'], recieve_data['robotHandOffTargetDistance'], robot_hand_zero_point)

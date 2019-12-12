@@ -6,7 +6,7 @@ import configparser
 import json
 import struct
 import datetime
-
+import threading
 import ev3dev.ev3 as ev3
 
 # Utility Functions
@@ -14,6 +14,10 @@ def load_config(ini_path):
     config = configparser.ConfigParser()
     config.read(ini_path)
     return config['config']['ip'], int(config['config']['port'])
+
+
+
+
 
 # ev3 Setting
 # -----------------------------------------------------------------------
@@ -39,6 +43,23 @@ address = (ip, port)
 ev3_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ev3_socket.connect(address)
 ev3_socket.send(ev3_name.encode('utf-8'))
+
+def stopper_and_push_move(recieve_data):
+    try:
+        rconv_stopper_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2StopperTargetSpeed'], position_sp=recieve_data['rConv2StopperTargetDistance'], stop_action = 'hold')
+        rconv_stopper_motor.wait_while('running', timeout=2000)
+        rconv_push_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2PushTargetSpeed'], position_sp=recieve_data['rConv2PushTargetDistance'], stop_action = 'hold')
+        rconv_push_motor.wait_while('running', timeout=2500)
+    except:
+        pass
+def stopper_and_push_back(recieve_data):
+    try:
+        rconv_push_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2PushTargetSpeed'], position_sp=recieve_data['rConv2PushTargetDistance'], stop_action = 'hold')
+        rconv_push_motor.wait_while('running', timeout=2500)
+        rconv_stopper_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2StopperTargetSpeed'], position_sp=recieve_data['rConv2StopperTargetDistance'], stop_action = 'hold')
+        rconv_stopper_motor.wait_while('running', timeout=2000)
+    except:
+        pass
 
 while True:
     send_data = dict()
@@ -99,14 +120,19 @@ while True:
         rconv_push_motor.wait_while('running')
         break
     else :
+        rconv1_motor.run_forever(speed_sp=recieve_data['rConv1TargetSpeed'])
+        rconv2_motor.run_forever(speed_sp=-recieve_data['rConv2TargetSpeed'])
         try:
-            #rconv1_motor.run_forever(speed_sp=recieve_data['rConv1TargetSpeed'])
-            #rconv2_motor.run_forever(speed_sp=-recieve_data['rConv2TargetSpeed'])
-            rconv_stopper_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2StopperTargetSpeed'], position_sp=recieve_data['rConv2StopperTargetDistance'], stop_action = 'hold')
-            rconv_push_motor.run_to_abs_pos(speed_sp=recieve_data['rConv2PushTargetSpeed'], position_sp=recieve_data['rConv2PushTargetDistance'], stop_action = 'hold')
+            if(recieve_data['rConv2StopperTargetDistance'] == 0):
+                t2 = threading.Thread(target=stopper_and_push_back, args=(recieve_data,))
+                t2.start()
+            else:
+                t1 = threading.Thread(target=stopper_and_push_move, args=(recieve_data,))
+                t1.start()
+            
 
         except:
-            print('something is null')
+            pass
 # -----------------------------------------------------------------------
 
     # sleep
